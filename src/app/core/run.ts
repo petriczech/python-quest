@@ -1,0 +1,122 @@
+import {
+  Command,
+  DEFAULT_COLOR,
+  Fill,
+  Point,
+  Segment,
+  Trace,
+  TraceStep,
+  TurtleState,
+} from './program';
+
+export const MAX_STEPS = 5000;
+
+const PRECISION = 1e6;
+
+function round(value: number): number {
+  const rounded = Math.round(value * PRECISION) / PRECISION;
+  return Object.is(rounded, -0) ? 0 : rounded;
+}
+
+function normalizeHeading(heading: number): number {
+  const h = round(heading % 360);
+  return h < 0 ? h + 360 : h;
+}
+
+export const DEFAULT_START: TurtleState = {
+  x: 0,
+  y: 0,
+  heading: 0,
+  penDown: true,
+  color: DEFAULT_COLOR,
+};
+
+/**
+ * Spustí program a vrátí trace. Souřadnice jako Python turtle:
+ * (0, 0) uprostřed, y nahoru, úhel 0 = východ, `left` je kladný směr.
+ */
+export function run(program: readonly Command[], start: Partial<TurtleState> = {}): Trace {
+  const initial: TurtleState = { ...DEFAULT_START, ...start };
+  const state: TurtleState = { ...initial };
+  const steps: TraceStep[] = [];
+  const segments: Segment[] = [];
+  const fills: Fill[] = [];
+  const openFills: Point[][] = [];
+  let truncated = false;
+
+  const record = (path: number[]): void => {
+    steps.push({ ...state, path, segmentCount: segments.length, fillCount: fills.length });
+  };
+
+  const moveTo = (x: number, y: number): void => {
+    const from = { x: state.x, y: state.y };
+    const to = { x: round(x), y: round(y) };
+    if (state.penDown && (from.x !== to.x || from.y !== to.y)) {
+      segments.push({ from, to, color: state.color });
+    }
+    state.x = to.x;
+    state.y = to.y;
+    for (const polygon of openFills) {
+      polygon.push({ ...to });
+    }
+  };
+
+  const exec = (commands: readonly Command[], prefix: number[]): void => {
+    for (const [index, command] of commands.entries()) {
+      if (steps.length >= MAX_STEPS) {
+        truncated = true;
+        return;
+      }
+      const path = [...prefix, index];
+      switch (command.kind) {
+        case 'forward':
+        case 'backward': {
+          const distance = command.kind === 'forward' ? command.value : -command.value;
+          const radians = (state.heading * Math.PI) / 180;
+          moveTo(state.x + distance * Math.cos(radians), state.y + distance * Math.sin(radians));
+          record(path);
+          break;
+        }
+        case 'left':
+        case 'right': {
+          const sign = command.kind === 'left' ? 1 : -1;
+          state.heading = normalizeHeading(state.heading + sign * command.angle);
+          record(path);
+          break;
+        }
+        case 'penUp':
+        case 'penDown':
+          state.penDown = command.kind === 'penDown';
+          record(path);
+          break;
+        case 'goto':
+          moveTo(command.x, command.y);
+          record(path);
+          break;
+        case 'color':
+          state.color = command.value;
+          record(path);
+          break;
+        case 'fill': {
+          const polygon: Point[] = [{ x: state.x, y: state.y }];
+          openFills.push(polygon);
+          exec(command.body, path);
+          openFills.pop();
+          if (polygon.length >= 3) {
+            fills.push({ polygon, color: command.color });
+          }
+          record(path);
+          break;
+        }
+        case 'repeat':
+          for (let i = 0; i < command.times && !truncated; i++) {
+            exec(command.body, path);
+          }
+          break;
+      }
+    }
+  };
+
+  exec(program, []);
+  return { start: initial, steps, segments, fills, truncated };
+}
