@@ -1,0 +1,110 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.skip-link {
+  position: absolute;
+  left: 8px;
+  top: -48px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border-radius: 8px;
+  z-index: 10;
+}
+
+.skip-link:focus {
+  top: 8px;
+}
+
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 24px;
+  background: var(--ink);
+  color: #ffffff;
+}
+
+.topbar-left,
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+
+nav {
+  display: flex;
+  gap: 4px;
+}
+
+nav a {
+  color: var(--ink-muted);
+  text-decoration: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+}
+
+nav a.active {
+  color: #ffffff;
+  font-weight: 600;
+  background: #22395a;
+}
+
+.streak {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+}
+
+.level {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.level-badge {
+  font-size: 14px;
+  font-weight: 600;
+  background: var(--ink-3);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.xp {
+  width: 160px;
+}
+
+.xp-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--ink-3);
+  overflow: hidden;
+}
+
+.xp-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+
+.xp-text {
+  font-size: 12px;
+  color: var(--ink-muted);
+  margin-top: 4px;
+}

@@ -1,0 +1,106 @@
+<div class="page">
+  <section class="card hello" aria-label="Můj postup">
+    <div>
+      <h1>Ahoj!</h1>
+      <p>Do úrovně {{ progress.playerLevel().level + 1 }} ti chybí {{ toNextLevel() }} XP.</p>
+    </div>
+    <dl class="stats">
+      <div>
+        <dt>Úroveň</dt>
+        <dd>{{ progress.playerLevel().level }}</dd>
+      </div>
+      <div>
+        <dt>XP</dt>
+        <dd>{{ progress.xp() }}</dd>
+      </div>
+      <div>
+        <dt>Hvězdy</dt>
+        <dd>
+          {{ progress.totalStars() }} <span class="of">/ {{ progress.maxStars }}</span>
+        </dd>
+      </div>
+      <div class="streak">
+        <dt>Série</dt>
+        <dd>{{ progress.streak() }} d</dd>
+      </div>
+    </dl>
+  </section>
+
+  @for (item of worlds(); track item.world.id) {
+    <section
+      class="world"
+      [class.locked]="!item.unlocked"
+      [attr.aria-labelledby]="'svet-' + item.world.id"
+    >
+      <header class="world-head">
+        <div>
+          <p class="eyebrow">Svět {{ item.world.id }}</p>
+          <h2 [id]="'svet-' + item.world.id">{{ item.world.title }}</h2>
+          <p class="description">{{ item.world.description }}</p>
+        </div>
+        <div class="world-progress">
+          @if (!item.unlocked) {
+            <span class="pill pill-locked">Zamčeno · 2/3 hvězd ze světa {{ item.world.id - 1 }}</span>
+          } @else if (item.done) {
+            <span class="pill pill-done">Hotovo</span>
+          }
+          <div
+            class="bar"
+            role="progressbar"
+            [attr.aria-label]="'Hvězdy ve světě ' + item.world.id"
+            [attr.aria-valuenow]="item.stars"
+            aria-valuemin="0"
+            [attr.aria-valuemax]="item.max"
+          >
+            <div class="bar-fill" [style.width.%]="(item.stars / item.max) * 100"></div>
+          </div>
+          <span class="count">{{ item.stars }} / {{ item.max }} hvězd</span>
+          @if (item.unlocked && item.next) {
+            <a class="btn btn-primary" [routerLink]="['/uloha', item.next.id]">
+              {{ item.stars === 0 ? 'Začít' : 'Pokračovat' }}
+            </a>
+          }
+        </div>
+      </header>
+
+      <ol class="levels">
+        @for (entry of item.levels; track entry.level.id) {
+          <li>
+            @if (entry.unlocked) {
+              <a class="level" [routerLink]="['/uloha', entry.level.id]">
+                <app-shape-preview [level]="entry.level" />
+                <span class="level-name">
+                  <span class="level-index">{{ entry.level.index }}</span>
+                  {{ entry.level.title }}
+                </span>
+                <span class="stars" role="img" [attr.aria-label]="entry.starCount + ' ze 3 hvězd'">
+                  @for (star of entry.stars; track $index) {
+                    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                      <path
+                        d="M12 2l3 6.5 7 .8-5.2 4.8 1.5 7L12 17.6 5.7 21.1l1.5-7L2 9.3l7-.8z"
+                        [attr.fill]="star ? '#F2A33A' : 'none'"
+                        [attr.stroke]="star ? '#B9741A' : '#8A9BB0'"
+                        stroke-width="1.5"
+                      />
+                    </svg>
+                  }
+                </span>
+              </a>
+            } @else {
+              <div class="level level-locked" aria-disabled="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+                  <rect x="5" y="11" width="14" height="10" rx="2" />
+                  <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                </svg>
+                <span class="level-name">
+                  <span class="level-index">{{ entry.level.index }}</span>
+                  {{ entry.level.title }}
+                </span>
+              </div>
+            }
+          </li>
+        }
+      </ol>
+    </section>
+  }
+</div>

@@ -1,1 +1,138 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  /* Barvy */
+  --ink: #12233b;
+  --ink-2: #1c3352;
+  --ink-3: #2b4568;
+  --ink-muted: #b9c6d6;
+  --paper: #eef2f6;
+  --paper-grid: #dce4ec;
+  --surface: #ffffff;
+  --surface-2: #f5f8fb;
+  --border: #d3dce6;
+  --border-strong: #c9d4e0;
+  --text: #12233b;
+  --text-2: #33445a;
+  --text-3: #4a5b70;
+  --accent: #e8632b;
+  --accent-strong: #c2470f;
+  --accent-soft: #fff1e8;
+  --accent-text: #8c3410;
+  --link: #1f5fbf;
+  --star: #f2a33a;
+  --star-edge: #b9741a;
+  --ok: #0f7b6c;
+
+  /* Bloky */
+  --move-bg: #e8f0fb;
+  --move-border: #b9cdeb;
+  --move-text: #123f85;
+  --turn-bg: #fff1e8;
+  --turn-border: #f3c7a8;
+  --turn-text: #8c3410;
+  --repeat-bg: #f2edfb;
+  --repeat-border: #dcd1f2;
+  --repeat-text: #4a2f96;
+  --pen-bg: #e9f6f3;
+  --pen-border: #bfe0da;
+  --pen-text: #0b5c51;
+
+  /* Typografie */
+  --font-ui: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-code: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Rozměry */
+  --radius-card: 16px;
+  --radius-card-lg: 20px;
+  --radius-button: 10px;
+  --touch: 44px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-ui);
+  color: var(--text);
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--paper-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--paper-grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+a {
+  color: var(--link);
+}
+
+button {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--link);
+  outline-offset: 2px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 20px;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.btn {
+  min-height: var(--touch);
+  padding: 0 16px;
+  border-radius: var(--radius-button);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  border: none;
+  background: var(--accent-strong);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
