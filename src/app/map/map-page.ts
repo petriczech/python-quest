@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { LEVELS, WORLDS } from '../levels/levels';
 import { ProgressStore } from '../progress/progress.store';
 import { ShapePreview } from '../shared/shape-preview';
+import { BADGES } from '../core/badges';
 
 @Component({
   selector: 'app-map-page',
@@ -12,6 +13,7 @@ import { ShapePreview } from '../shared/shape-preview';
 })
 export class MapPage {
   protected readonly progress = inject(ProgressStore);
+  protected readonly badges = BADGES;
 
   protected readonly toNextLevel = computed(
     () => this.progress.playerLevel().to - this.progress.xp(),

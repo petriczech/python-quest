@@ -1,4 +1,5 @@
 import { Service, computed, signal } from '@angular/core';
+import { BADGES, Badge, earnedBadges } from '../core/badges';
 import { Level } from '../core/level';
 import { Command } from '../core/program';
 import {
@@ -31,6 +32,7 @@ export interface Attempt {
   newStars: number;
   xpBefore: number;
   xpAfter: number;
+  newBadges: Badge[];
 }
 
 function today(): string {
@@ -40,7 +42,7 @@ function today(): string {
 }
 
 function load(): SavedProgress {
-  const empty: SavedProgress = { records: {}, streak: { days: 0, lastDay: null }, drafts: {} };
+  const empty: SavedProgress = { records: {}, streak: { days: 0, lastDay: null, best: 0 }, drafts: {} };
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? { ...empty, ...(JSON.parse(raw) as Partial<SavedProgress>) } : empty;
@@ -57,6 +59,7 @@ export class ProgressStore {
   readonly xp = computed(() => totalXp(this.records()));
   readonly playerLevel = computed(() => playerLevel(this.xp()));
   readonly streak = computed(() => currentStreak(this.state().streak, today()));
+  readonly badges = computed(() => earnedBadges(this.records(), this.state().streak, LEVELS));
   readonly totalStars = computed(() =>
     Object.values(this.records()).reduce((sum, record) => sum + starCount(record.stars), 0),
   );
@@ -104,6 +107,7 @@ export class ProgressStore {
     const stars = evaluateStars(level, program, percent);
     const previous = this.records()[level.id];
     const xpBefore = this.xp();
+    const badgesBefore = this.badges();
     const before = previous ? starCount(previous.stars) : 0;
     const record = mergeRecord(previous, { stars, percent, hintsUsed });
     this.update((state) => ({
@@ -111,11 +115,18 @@ export class ProgressStore {
       records: { ...state.records, [level.id]: record },
       streak: stars[0] ? bumpStreak(state.streak, today()) : state.streak,
     }));
-    return { stars, newStars: starCount(record.stars) - before, xpBefore, xpAfter: this.xp() };
+    const badgesAfter = this.badges();
+    return {
+      stars,
+      newStars: starCount(record.stars) - before,
+      xpBefore,
+      xpAfter: this.xp(),
+      newBadges: BADGES.filter((b) => badgesAfter.has(b.id) && !badgesBefore.has(b.id)),
+    };
   }
 
   reset(): void {
-    this.update(() => ({ records: {}, streak: { days: 0, lastDay: null }, drafts: {} }));
+    this.update(() => ({ records: {}, streak: { days: 0, lastDay: null, best: 0 }, drafts: {} }));
   }
 
   private update(fn: (state: SavedProgress) => SavedProgress): void {

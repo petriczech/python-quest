@@ -1,4 +1,10 @@
-@if (level(); as level) {
+@if (level() && !unlocked()) {
+  <div class="missing card">
+    <h1>Úloha je zamčená</h1>
+    <p>Nejdřív splň předchozí úlohu. Další svět se odemkne za 2/3 hvězd z předchozího světa.</p>
+    <a routerLink="/mapa">Zpět na mapu</a>
+  </div>
+} @else if (level(); as level) {
   <nav class="crumbs" aria-label="Drobečková navigace">
     <a routerLink="/mapa">Mapa</a>
     <span aria-hidden="true">/</span>
@@ -187,6 +193,19 @@
           </li>
         }
       </ul>
+      @for (badge of attempt.newBadges; track badge.id) {
+        <div class="new-badge">
+          <svg width="52" height="52" viewBox="0 0 56 56" aria-hidden="true">
+            <polygon points="28,3 51,16 51,40 28,53 5,40 5,16" fill="#FFFFFF" stroke="#C2470F" stroke-width="2.5" />
+            <path d="M18 30l7 7 13-16" fill="none" stroke="#C2470F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <div>
+            <div class="new-badge-label">Nový odznak</div>
+            <div class="new-badge-title">{{ badge.title }}</div>
+            <div class="new-badge-text">{{ badge.description }}</div>
+          </div>
+        </div>
+      }
       <p class="done-total">
         @if (attempt.xpAfter > attempt.xpBefore) {
           Získáno <b>+{{ attempt.xpAfter - attempt.xpBefore }} XP</b>.

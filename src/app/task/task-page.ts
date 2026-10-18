@@ -43,6 +43,10 @@ export class TaskPage {
   private readonly dialog = viewChild<ElementRef<HTMLDialogElement>>('dialog');
 
   protected readonly level = computed(() => findLevel(this.id()));
+  protected readonly unlocked = computed(() => {
+    const level = this.level();
+    return level ? this.progress.isLevelUnlocked(level) : false;
+  });
   protected readonly world = computed(() => WORLDS.find((w) => w.id === this.level()?.world));
   protected readonly worldSize = computed(
     () => LEVELS.filter((level) => level.world === this.level()?.world).length,

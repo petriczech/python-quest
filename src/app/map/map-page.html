@@ -26,6 +26,37 @@
     </dl>
   </section>
 
+  <section class="card badges" aria-labelledby="odznaky">
+    <h2 id="odznaky">Odznaky <span class="of">{{ progress.badges().size }} / {{ badges.length }}</span></h2>
+    <ul>
+      @for (badge of badges; track badge.id) {
+        @let earned = progress.badges().has(badge.id);
+        <li [class.earned]="earned">
+          <svg width="48" height="48" viewBox="0 0 56 56" aria-hidden="true">
+            <polygon
+              points="28,3 51,16 51,40 28,53 5,40 5,16"
+              [attr.fill]="earned ? '#FFF1E8' : '#F5F8FB'"
+              [attr.stroke]="earned ? '#C2470F' : '#B7C5D4'"
+              stroke-width="2.5"
+              [attr.stroke-dasharray]="earned ? null : '4 3'"
+            />
+            <path
+              d="M18 30l7 7 13-16"
+              fill="none"
+              [attr.stroke]="earned ? '#C2470F' : '#B7C5D4'"
+              stroke-width="3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          <span class="badge-title">{{ badge.title }}</span>
+          <span class="badge-text">{{ badge.description }}</span>
+          <span class="visually-hidden">{{ earned ? 'získáno' : 'zatím ne' }}</span>
+        </li>
+      }
+    </ul>
+  </section>
+
   @for (item of worlds(); track item.world.id) {
     <section
       class="world"

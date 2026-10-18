@@ -11,6 +11,8 @@ export interface LevelRecord {
   perfect: boolean;
   /** Nejvyšší použitý stupeň nápovědy */
   hintsUsed: number;
+  /** Splněno hned prvním spuštěním */
+  firstTry: boolean;
 }
 
 export const XP_PER_STAR = 20;
@@ -49,6 +51,7 @@ export function mergeRecord(
     bestMatch: Math.max(previous?.bestMatch ?? 0, attempt.percent),
     perfect: (previous?.perfect ?? false) || attempt.percent >= 100,
     hintsUsed: Math.max(previous?.hintsUsed ?? 0, attempt.hintsUsed),
+    firstTry: previous ? previous.firstTry : attempt.stars[0],
   };
 }
 
@@ -77,6 +80,8 @@ export interface Streak {
   days: number;
   /** Poslední den se splněnou úlohou, `YYYY-MM-DD` */
   lastDay: string | null;
+  /** Nejdelší dosažená série */
+  best: number;
 }
 
 function dayNumber(day: string): number {
@@ -90,7 +95,8 @@ export function bumpStreak(streak: Streak, today: string): Streak {
     return streak;
   }
   const continues = streak.lastDay !== null && dayNumber(today) - dayNumber(streak.lastDay) === 1;
-  return { days: continues ? streak.days + 1 : 1, lastDay: today };
+  const days = continues ? streak.days + 1 : 1;
+  return { days, lastDay: today, best: Math.max(streak.best, days) };
 }
 
 /** Série platná k danému dni (vynechaný den ji nuluje). */

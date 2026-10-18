@@ -389,3 +389,35 @@ h1 {
   color: #ffffff;
   border-radius: 14px;
 }
+
+.new-badge {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 12px;
+  background: var(--accent-soft);
+  color: var(--ink);
+  border-radius: 16px;
+  padding: 14px;
+  text-align: left;
+}
+
+.new-badge svg {
+  flex: none;
+}
+
+.new-badge-label {
+  font-size: 13px;
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.new-badge-title {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.new-badge-text {
+  font-size: 13px;
+  color: var(--text-2);
+}
