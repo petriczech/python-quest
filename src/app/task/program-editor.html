@@ -1,7 +1,23 @@
 <h2 class="eyebrow">Bloky</h2>
-<div class="palette" role="group" aria-label="Paleta bloků">
+<div
+  class="palette"
+  role="group"
+  aria-label="Paleta bloků"
+  cdkDropList
+  cdkDropListSortingDisabled
+  [cdkDropListData]="paletteId"
+  [cdkDropListConnectedTo]="listIds()"
+  [cdkDropListEnterPredicate]="noEnter"
+>
   @for (kind of palette(); track kind) {
-    <button type="button" class="block-button" [class]="'g-' + group(kind)" (click)="add(kind)">
+    <button
+      type="button"
+      class="block-button"
+      [class]="'g-' + group(kind)"
+      cdkDrag
+      [cdkDragData]="kind"
+      (click)="add(kind)"
+    >
       {{ labels[kind] }}
     </button>
   }
@@ -12,10 +28,20 @@
 </h2>
 
 <ng-template #list let-commands="commands" let-parent="parent">
-  <ol class="blocks">
+  <ol
+    class="blocks"
+    cdkDropList
+    [class.empty-list]="commands.length === 0"
+    [id]="listId(parent)"
+    [cdkDropListData]="parent"
+    [cdkDropListConnectedTo]="listIds()"
+    (cdkDropListDropped)="drop($event)"
+  >
     @for (command of commands; track $index; let i = $index; let first = $first; let last = $last) {
       @let path = childPath(parent, i);
       <li
+        cdkDrag
+        [cdkDragData]="path"
         class="block"
         [class]="'g-' + group(command.kind)"
         [class.selected]="isSelected(path)"
@@ -25,6 +51,7 @@
           <button
             type="button"
             class="name"
+            cdkDragHandle
             [attr.aria-pressed]="isSelected(path)"
             [attr.aria-label]="label(command) + (hasBody(command) ? ', vložit dovnitř' : ', vložit za')"
             (click)="select(path)"
@@ -100,7 +127,7 @@
           <div class="body">
             <ng-container *ngTemplateOutlet="list; context: { commands: command.body, parent: path }" />
             @if (command.body.length === 0) {
-              <p class="empty">Vyber blok {{ label(command) }} a klikni na blok v paletě.</p>
+              <p class="empty">Přetáhni sem blok, nebo vyber {{ label(command) }} a klikni na blok v paletě.</p>
             }
           </div>
         }

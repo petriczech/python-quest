@@ -1,3 +1,4 @@
+import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList } from '@angular/cdk/drag-drop';
 import { NgTemplateOutlet } from '@angular/common';
 import { Component, computed, input, model, output, signal } from '@angular/core';
 import {
@@ -6,6 +7,7 @@ import {
   createBlock,
   getBlock,
   insertBlock,
+  moveBlock,
   removeBlock,
   replaceBlock,
   shiftBlock,
@@ -27,6 +29,8 @@ const GROUPS: Record<CommandKind, BlockGroup> = {
   color: 'pen',
 };
 
+const PALETTE = 'palette';
+
 const LIMITS = {
   distance: { min: 0, max: 400, step: 10 },
   angle: { min: 0, max: 360, step: 15 },
@@ -43,7 +47,7 @@ function clamp(value: number, limit: Limit): number {
 /** Klikací editor bloků s paletou. */
 @Component({
   selector: 'app-program-editor',
-  imports: [NgTemplateOutlet],
+  imports: [NgTemplateOutlet, CdkDropList, CdkDrag, CdkDragHandle],
   templateUrl: './program-editor.html',
   styleUrl: './program-editor.css',
 })
@@ -86,6 +90,50 @@ export class ProgramEditor {
 
   protected childPath(path: number[], index: number): number[] {
     return [...path, index];
+  }
+
+  protected readonly paletteId = PALETTE;
+
+  /** Id všech seznamů, nejhlubší napřed, aby vnořený seznam dostal přednost */
+  protected readonly listIds = computed(() => {
+    const paths: number[][] = [];
+    const walk = (commands: readonly Command[], prefix: number[]): void => {
+      commands.forEach((command, index) => {
+        if (hasBody(command)) {
+          const path = [...prefix, index];
+          paths.push(path);
+          walk(command.body, path);
+        }
+      });
+    };
+    walk(this.program(), []);
+    return [...paths.sort((a, b) => b.length - a.length), []].map((path) => this.listId(path));
+  });
+
+  protected listId(path: number[]): string {
+    return path.length ? `blocks-${path.join('-')}` : 'blocks-root';
+  }
+
+  /** Do palety se nic nepouští */
+  protected readonly noEnter = () => false;
+
+  /** Puštění bloku z palety nebo přesun v programu. */
+  protected drop(event: CdkDragDrop<number[] | typeof PALETTE>): void {
+    const target = event.container.data;
+    if (target === PALETTE) {
+      return;
+    }
+    const source = event.previousContainer.data;
+    if (source === PALETTE) {
+      this.set(insertBlock(this.program(), target, createBlock(event.item.data as CommandKind), event.currentIndex));
+      this.selected.set(null);
+      return;
+    }
+    if (event.previousContainer === event.container && event.previousIndex === event.currentIndex) {
+      return;
+    }
+    this.set(moveBlock(this.program(), [...source, event.previousIndex], target, event.currentIndex));
+    this.selected.set(null);
   }
 
   protected select(path: number[]): void {

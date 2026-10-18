@@ -215,3 +215,27 @@ select,
   color: var(--text-3);
   font-size: 14px;
 }
+
+.blocks.empty-list {
+  min-height: var(--touch);
+  border: 2px dashed var(--border-strong);
+  border-radius: 10px;
+}
+
+.cdk-drag-preview {
+  box-shadow: 0 8px 24px rgb(18 35 59 / 0.25);
+  border-radius: 12px;
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.35;
+}
+
+.cdk-drag-animating,
+.blocks.cdk-drop-list-dragging .block:not(.cdk-drag-placeholder) {
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.name[cdkDragHandle] {
+  cursor: grab;
+}

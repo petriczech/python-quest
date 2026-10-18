@@ -155,7 +155,7 @@
         <app-program-editor
           [(program)]="program"
           [palette]="level.palette"
-          [activePath]="running() || step() < output().steps.length ? activePath() : null"
+          [activePath]="activePath()"
           (changed)="onProgramChange()"
         />
         <div class="history">
