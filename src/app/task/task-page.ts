@@ -91,9 +91,14 @@ export class TaskPage {
     return level ? this.progress.records()[level.id] : undefined;
   });
 
-  protected readonly activePath = computed(
-    () => this.output().steps[this.step() - 1]?.path.join(',') ?? null,
-  );
+  /** Blok právě prováděného kroku; po doběhnutí programu se nezvýrazňuje */
+  protected readonly activePath = computed(() => {
+    const total = this.output().steps.length;
+    if (!this.running() && this.step() >= total) {
+      return null;
+    }
+    return this.output().steps[this.step() - 1]?.path.join(',') ?? null;
+  });
 
   protected readonly criteria = computed(() => {
     const level = this.level();
