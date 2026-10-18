@@ -1,0 +1,212 @@
+@if (level(); as level) {
+  <nav class="crumbs" aria-label="Drobečková navigace">
+    <a routerLink="/mapa">Mapa</a>
+    <span aria-hidden="true">/</span>
+    <span>Svět {{ level.world }} · {{ world()?.title }}</span>
+    <span aria-hidden="true">/</span>
+    <span aria-current="page">Úloha {{ level.index }} z {{ worldSize() }}</span>
+  </nav>
+
+  <div class="layout">
+    <!-- ZADÁNÍ -->
+    <section class="column task" aria-labelledby="zadani">
+      <div class="card">
+        <p class="eyebrow">Zadání</p>
+        <h1 id="zadani">{{ level.title }}</h1>
+        <p class="task-text">{{ level.task }}</p>
+        <app-pattern-figure [level]="level" />
+      </div>
+
+      <div class="card">
+        <h2 class="eyebrow">Hvězdy</h2>
+        <ul class="criteria">
+          @for (item of criteria(); track $index) {
+            <li [class.done]="item.done">
+              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M12 2l3 6.5 7 .8-5.2 4.8 1.5 7L12 17.6 5.7 21.1l1.5-7L2 9.3l7-.8z"
+                  [attr.fill]="item.done ? '#F2A33A' : 'none'"
+                  [attr.stroke]="item.done ? '#B9741A' : '#8A9BB0'"
+                  stroke-width="1.5"
+                />
+              </svg>
+              <span>{{ item.text }}</span>
+              <span class="visually-hidden">{{ item.done ? '(získáno)' : '(zatím ne)' }}</span>
+            </li>
+          }
+        </ul>
+        @if (record(); as record) {
+          <p class="best">Nejlepší shoda: {{ record.bestMatch }} %</p>
+        }
+
+        @for (hint of level.hints.slice(0, hintLevel()); track $index) {
+          <p class="hint" role="note">
+            <b>Nápověda {{ $index + 1 }}:</b> {{ hint }}
+          </p>
+        }
+        @if (hintLevel() < level.hints.length) {
+          <button type="button" class="btn hint-button" (click)="showHint()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z" />
+            </svg>
+            {{ hintLevel() === 0 ? 'Nápověda' : 'Další nápověda' }}
+            @if (!record()?.stars?.[0]) {
+              <span class="cost">(−{{ xpPerHint }} XP)</span>
+            }
+          </button>
+        }
+      </div>
+    </section>
+
+    <!-- PLÁTNO -->
+    <section class="column canvas-column" aria-label="Plátno">
+      <div class="card canvas-card">
+        <div class="toolbar">
+          <div class="controls">
+            <button type="button" class="btn btn-primary" (click)="runProgram()" [disabled]="running()">
+              <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l14 8-14 8z" fill="currentColor" /></svg>
+              Spustit
+            </button>
+            <button type="button" class="btn" (click)="stepOnce()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4v16M9 4l10 8-10 8z" /></svg>
+              Krok
+            </button>
+            <button type="button" class="btn icon-btn" aria-label="Reset" (click)="resetRun()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5" /></svg>
+            </button>
+          </div>
+          <div class="options">
+            <label>
+              Rychlost
+              <input type="range" min="1" max="10" [value]="speed()" (input)="setSpeed(valueOf($event))" />
+            </label>
+            <label><input type="checkbox" [checked]="showPattern()" (change)="showPattern.set(checkedOf($event))" />Vzor</label>
+            <label><input type="checkbox" [checked]="showGrid()" (change)="showGrid.set(checkedOf($event))" />Mřížka</label>
+          </div>
+        </div>
+
+        <div class="compare">
+          <div class="modes" role="group" aria-label="Režim porovnání">
+            @for (item of modes; track item.value) {
+              <button
+                type="button"
+                [attr.aria-pressed]="mode() === item.value"
+                (click)="mode.set(item.value)"
+              >
+                {{ item.label }}
+              </button>
+            }
+          </div>
+          <div class="score" aria-live="polite">
+            @if (result(); as result) {
+              <span class="score-label">Shoda</span>
+              <span class="score-value" [class.pass]="result.match.percent >= 98">{{ result.match.percent }} %</span>
+            } @else {
+              <span class="score-label">Shoda se ukáže po spuštění</span>
+            }
+          </div>
+        </div>
+
+        <app-turtle-canvas
+          [reference]="reference()"
+          [output]="output()"
+          [step]="step()"
+          [mode]="mode()"
+          [showPattern]="showPattern()"
+          [showGrid]="showGrid()"
+        />
+
+        <div class="stepper">
+          <span class="step-count">krok {{ step() }} / {{ output().steps.length }}</span>
+          <input
+            type="range"
+            min="0"
+            [max]="output().steps.length"
+            [value]="step()"
+            aria-label="Krokování programu"
+            (input)="seek(valueOf($event))"
+          />
+        </div>
+      </div>
+
+      @if (result(); as result) {
+        <div class="feedback" role="status" [class.pass]="result.match.percent >= 98">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 8v5M12 16.5v.5" />
+          </svg>
+          <span>{{ result.text }}</span>
+        </div>
+      }
+      @if (output().truncated) {
+        <div class="feedback" role="alert">Program je moc dlouhý, želva skončila po {{ output().steps.length }} krocích.</div>
+      }
+    </section>
+
+    <!-- BLOKY + PYTHON -->
+    <section class="column program-column" aria-label="Program">
+      <div class="card">
+        <app-program-editor
+          [(program)]="program"
+          [palette]="level.palette"
+          [activePath]="running() || step() < output().steps.length ? activePath() : null"
+          (changed)="onProgramChange()"
+        />
+        <div class="history">
+          <button type="button" class="btn" (click)="undo()" [disabled]="!canUndo()" aria-keyshortcuts="Control+Z">Zpět</button>
+          <button type="button" class="btn" (click)="redo()" [disabled]="!canRedo()" aria-keyshortcuts="Control+Y">Znovu</button>
+          <button type="button" class="btn" (click)="clear()" [disabled]="program().length === 0">Vymazat vše</button>
+        </div>
+      </div>
+      <app-python-panel [program]="program()" [start]="start()" [activePath]="activePath()" />
+    </section>
+  </div>
+
+  <dialog #dialog class="done-dialog" aria-labelledby="hotovo" (close)="attempt.set(null)">
+    @if (attempt(); as attempt) {
+      <p class="done-meta">Svět {{ level.world }} · Úloha {{ level.index }}</p>
+      <h2 id="hotovo">{{ result()?.match?.percent === 100 ? 'Paráda!' : 'Hotovo!' }}</h2>
+      <p class="done-text">{{ result()?.text }}</p>
+      <div class="done-stars" role="img" [attr.aria-label]="starCount(attempt.stars) + ' ze 3 hvězd'">
+        @for (star of attempt.stars; track $index) {
+          <svg [attr.width]="$index === 1 ? 70 : 58" [attr.height]="$index === 1 ? 70 : 58" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M12 2l3 6.5 7 .8-5.2 4.8 1.5 7L12 17.6 5.7 21.1l1.5-7L2 9.3l7-.8z"
+              [attr.fill]="star ? '#F2A33A' : 'none'"
+              [attr.stroke]="star ? '#FFD08A' : '#3A587F'"
+              stroke-width="1"
+            />
+          </svg>
+        }
+      </div>
+      <ul class="rewards">
+        @for (reward of rewards(); track $index) {
+          <li [class.missed]="!reward.ok">
+            <span>{{ reward.text }}</span>
+            <span class="xp">{{ reward.ok ? '+' + reward.xp + ' XP' : '—' }}</span>
+          </li>
+        }
+      </ul>
+      <p class="done-total">
+        @if (attempt.xpAfter > attempt.xpBefore) {
+          Získáno <b>+{{ attempt.xpAfter - attempt.xpBefore }} XP</b>.
+        } @else {
+          Za opakování se XP nepřičítá, jen za nové hvězdy.
+        }
+      </p>
+      <div class="done-actions">
+        @if (next(); as next) {
+          <a class="btn btn-accent" [routerLink]="['/uloha', next.id]" (click)="closeDialog()">Další úloha</a>
+        } @else {
+          <a class="btn btn-accent" routerLink="/mapa" (click)="closeDialog()">Zpět na mapu</a>
+        }
+        <button type="button" class="btn btn-ghost" (click)="closeDialog()">Zkusit znovu</button>
+      </div>
+    }
+  </dialog>
+} @else {
+  <div class="missing card">
+    <h1>Úloha neexistuje</h1>
+    <a routerLink="/mapa">Zpět na mapu</a>
+  </div>
+}

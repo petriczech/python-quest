@@ -1,0 +1,120 @@
+<h2 class="eyebrow">Bloky</h2>
+<div class="palette" role="group" aria-label="Paleta bloků">
+  @for (kind of palette(); track kind) {
+    <button type="button" class="block-button" [class]="'g-' + group(kind)" (click)="add(kind)">
+      {{ labels[kind] }}
+    </button>
+  }
+</div>
+
+<h2 class="eyebrow program-title">
+  Můj program · {{ blockCountLabel() }}
+</h2>
+
+<ng-template #list let-commands="commands" let-parent="parent">
+  <ol class="blocks">
+    @for (command of commands; track $index; let i = $index; let first = $first; let last = $last) {
+      @let path = childPath(parent, i);
+      <li
+        class="block"
+        [class]="'g-' + group(command.kind)"
+        [class.selected]="isSelected(path)"
+        [class.active]="activePath() === key(path)"
+      >
+        <div class="row">
+          <button
+            type="button"
+            class="name"
+            [attr.aria-pressed]="isSelected(path)"
+            [attr.aria-label]="label(command) + (hasBody(command) ? ', vložit dovnitř' : ', vložit za')"
+            (click)="select(path)"
+          >
+            {{ label(command) }}
+          </button>
+
+          @let number = numberOf(command);
+          @if (number) {
+            <span class="stepper">
+              <button
+                type="button"
+                [attr.aria-label]="'Ubrat: ' + label(command)"
+                (click)="setNumber(path, command, number.value - limits[number.limit].step, number.limit)"
+              >
+                −
+              </button>
+              <input
+                type="number"
+                inputmode="numeric"
+                [value]="number.value"
+                [min]="limits[number.limit].min"
+                [max]="limits[number.limit].max"
+                [attr.aria-label]="'Hodnota: ' + label(command)"
+                (change)="setNumber(path, command, +valueOf($event), number.limit)"
+              />
+              <button
+                type="button"
+                [attr.aria-label]="'Přidat: ' + label(command)"
+                (click)="setNumber(path, command, number.value + limits[number.limit].step, number.limit)"
+              >
+                +
+              </button>
+            </span>
+            @if (number.unit) {
+              <span class="unit" aria-hidden="true">{{ number.unit }}</span>
+            }
+          }
+
+          @let color = colorOf(command);
+          @if (color !== null) {
+            <span class="swatch" [style.background]="color" aria-hidden="true"></span>
+            <select
+              [value]="color"
+              [attr.aria-label]="'Barva: ' + label(command)"
+              (change)="setColor(path, command, valueOf($event))"
+            >
+              @for (option of colors; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          }
+
+          @if (command.kind === 'goto') {
+            <label class="coord">x <input type="number" [value]="command.x" (change)="setGoto(path, command, 'x', +valueOf($event))" /></label>
+            <label class="coord">y <input type="number" [value]="command.y" (change)="setGoto(path, command, 'y', +valueOf($event))" /></label>
+          }
+
+          <span class="actions">
+            <button type="button" class="icon" aria-label="Posunout nahoru" [disabled]="first" (click)="shift(path, -1)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6" /></svg>
+            </button>
+            <button type="button" class="icon" aria-label="Posunout dolů" [disabled]="last" (click)="shift(path, 1)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <button type="button" class="icon" aria-label="Smazat blok" (click)="remove(path)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+            </button>
+          </span>
+        </div>
+
+        @if (hasBody(command)) {
+          <div class="body">
+            <ng-container *ngTemplateOutlet="list; context: { commands: command.body, parent: path }" />
+            @if (command.body.length === 0) {
+              <p class="empty">Vyber blok {{ label(command) }} a klikni na blok v paletě.</p>
+            }
+          </div>
+        }
+      </li>
+    }
+  </ol>
+</ng-template>
+
+<ng-container *ngTemplateOutlet="list; context: { commands: program(), parent: [] }" />
+<p class="hint-drop">
+  @if (selected()) {
+    Nový blok se vloží do vybraného opakuj nebo výplně, jinak za vybraný blok. Výběr zrušíš dalším
+    klikem.
+  } @else {
+    Klikni na blok v paletě, přidá se na konec programu.
+  }
+</p>
