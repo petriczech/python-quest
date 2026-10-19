@@ -36,11 +36,12 @@ function coverage(reference: Uint8Array, output: Uint8Array, width: number, heig
     const o = output[i] as number;
     if (r) {
       total++;
-      if (dilatedOut[i] === r) {
+      // Přesná shoda napřed: rozšíření masky přepíše barvu na hraně sousední výplně
+      if (o === r || dilatedOut[i] === r) {
         covered++;
       }
     }
-    if (o && dilatedRef[i] !== o) {
+    if (o && reference[i] !== o && dilatedRef[i] !== o) {
       total++;
     }
   }
