@@ -149,45 +149,45 @@ Postup je zevnitř ven: nejdřív čisté jádro (interpret, trace, skóre) s te
 
 ### Fáze 0 – základ projektu
 
-- [ ] `git init` a repo na GitHubu (preview kanály Firebase Hosting jedou přes GitHub Actions)
-- [ ] Angular workspace: standalone, zoneless, strict TS, ESLint, routy `/mapa`, `/uloha/:id`
-- [ ] design tokeny (viz tabulka výše), fonty, mřížka papíru
-- [ ] Vitest a Playwright v CI, deploy na Firebase Hosting z `main`
+- [ ] `git init` a repo na GitHubu (preview kanály Firebase Hosting jedou přes GitHub Actions). Lokální git je, repo na GitHubu zatím ne.
+- [x] Angular workspace: standalone, zoneless, strict TS, ESLint, routy `/mapa`, `/uloha/:id`
+- [x] design tokeny (viz tabulka výše), fonty, mřížka papíru
+- [ ] Vitest a Playwright v CI (lokálně běží oba, CI chybí), deploy na Firebase Hosting z `main`
 
 ### Fáze 1 – jádro: interpret a trace
 
-- [ ] typy `Command`, `Trace`, `Level`, interpret jako čistá funkce `run(program): Trace`
-- [ ] unit testy: čtverec, trojúhelník, vnořené `repeat`, `goto`, `penUp`, `fill`
-- [ ] generátor Pythonu s mapou `path → řádek`
+- [x] typy `Command`, `Trace`, `Level`, interpret jako čistá funkce `run(program): Trace`
+- [x] unit testy: čtverec, trojúhelník, vnořené `repeat`, `goto`, `penUp`, `fill`
+- [x] generátor Pythonu s mapou `path → řádek`
 
 ### Fáze 2 – plátno a porovnání
 
-- [ ] vzor jako SVG s kótami, výstup jako canvas s animací želvy a nastavitelnou rychlostí
-- [ ] krokovací slider nad `trace.steps`, zvýraznění bloku i řádku
-- [ ] `rasterize(trace)` v čistém TS, pixel match ve workeru, skóre v %, režimy posuvník / překrytí / diff
-- [ ] test: shodný program dá 100 %, trojúhelník s chybějící stranou méně než 75 %
+- [x] vzor jako SVG s kótami, výstup jako canvas s animací želvy a nastavitelnou rychlostí
+- [x] krokovací slider nad `trace.steps`, zvýraznění bloku i řádku
+- [x] `rasterize(trace)` v čistém TS, pixel match, skóre v %, režimy posuvník / překrytí / diff. **Odchylka:** výpočet běží v hlavním vlákně, ne ve workeru (trvá jednotky ms).
+- [x] test: shodný program dá 100 %, trojúhelník s chybějící stranou méně než 75 %
 
 ### Fáze 3 – klikací editor
 
-- [ ] paleta podle `level.palette`, přidávání bloků klikem, steppery hodnot
-- [ ] CDK drag & drop včetně vnoření do `repeat`, mazání, undo/redo
-- [ ] ovládání klávesnicí, cíle ≥ 44 px
+- [x] paleta podle `level.palette`, přidávání bloků klikem, steppery hodnot
+- [x] CDK drag & drop, mazání, undo/redo. **Omezení:** tažení do vnořeného `repeat` je v CDK nespolehlivé (seznam si pamatuje polohy ze začátku tažení), hlavní vstup je klik: vybraný `opakuj` přijme nový blok dovnitř. Spolehlivě funguje změna pořadí a vytažení z `repeat` ven.
+- [x] ovládání klávesnicí (tlačítka, Ctrl+Z / Ctrl+Y), cíle ≥ 44 px
 
 ### Fáze 4 – úlohy a hodnocení
 
-- [ ] JSON schéma úlohy, loader, validace souborů při buildu
-- [ ] hodnocení: % shody + textová nápověda + hvězdy z AST
-- [ ] obrazovka „Úloha splněna“, 24 úloh pro světy 1–2
+- [x] úlohy a validace při buildu. **Odchylka:** úlohy jsou typovaná TS data (`src/app/levels/levels.ts`), ne JSON. Validaci dělá kompilátor a test, že reference dá 100 % a vejde se na plátno.
+- [x] hodnocení: % shody + textová nápověda + hvězdy z AST
+- [x] obrazovka „Úloha splněna“, 24 úloh pro světy 1–2
 
 ### Fáze 5 – postup a gamifikace
 
-- [ ] Google přihlášení, postup ve Firestore (záznam na úlohu, XP se odvozuje), offline cache
-- [ ] XP, úrovně, série dní, mapa s odemykáním světů, základní odznaky
+- [ ] Google přihlášení, postup ve Firestore (záznam na úlohu, XP se odvozuje), offline cache. Zatím jen `localStorage`.
+- [x] XP, úrovně, série dní, mapa s odemykáním světů, základní odznaky
 
 ### Fáze 6 – PWA a pilot
 
-- [ ] service worker, offline úlohy, mobilní layout
-- [ ] E2E happy path a screenshot testy plátna
+- [x] service worker, offline úlohy, mobilní layout
+- [x] E2E happy path a screenshot testy plátna
 - [ ] pilot s jednou třídou
 
 ### Fáze 7 – po MVP
