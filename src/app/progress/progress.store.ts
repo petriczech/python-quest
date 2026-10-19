@@ -1,6 +1,7 @@
 import { Service, computed, signal } from '@angular/core';
 import { BADGES, Badge, earnedBadges } from '../core/badges';
 import { Level } from '../core/level';
+import { ProgressSnapshot } from '../core/sync';
 import { Command } from '../core/program';
 import {
   LevelRecord,
@@ -64,6 +65,16 @@ export class ProgressStore {
     Object.values(this.records()).reduce((sum, record) => sum + starCount(record.stars), 0),
   );
   readonly maxStars = LEVELS.length * 3;
+
+  /** Synchronizovaná část postupu; změna rozpracovaného programu ji nemění */
+  readonly snapshot = computed<ProgressSnapshot>(
+    () => ({ records: this.state().records, streak: this.state().streak }),
+    { equal: (a, b) => a.records === b.records && a.streak === b.streak },
+  );
+
+  applySnapshot(snapshot: ProgressSnapshot): void {
+    this.update((state) => ({ ...state, records: snapshot.records, streak: snapshot.streak }));
+  }
 
   worldStars(world: number): number {
     return LEVELS.filter((level) => level.world === world).reduce(

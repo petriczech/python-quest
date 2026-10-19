@@ -45,6 +45,9 @@
         <div class="xp-text">{{ progress.xp() }} / {{ progress.playerLevel().to }} XP</div>
       </div>
     </div>
+    @if (firebaseEnabled) {
+      <app-account-menu />
+    }
   </div>
 </header>
 <main id="obsah">
