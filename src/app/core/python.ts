@@ -14,6 +14,11 @@ export interface PythonCode {
 
 const LOOP_VARS = ['i', 'j', 'k', 'm', 'n'];
 
+/** Jméno proměnné cyklu podle hloubky odsazení */
+export function loopVar(depth: number): string {
+  return LOOP_VARS[depth] ?? `i${depth}`;
+}
+
 function num(value: number): string {
   return String(Math.round(value * 1000) / 1000);
 }
@@ -39,7 +44,12 @@ export function toPython(program: readonly Command[], start?: Partial<TurtleStat
     lines.push({ text: '' });
   }
 
-  const emit = (commands: readonly Command[], prefix: number[], depth: number): void => {
+  const emit = (
+    commands: readonly Command[],
+    prefix: number[],
+    depth: number,
+    forVar?: string,
+  ): void => {
     const indent = '    '.repeat(depth);
     for (const [index, command] of commands.entries()) {
       const pathKey = [...prefix, index].join(',');
@@ -52,7 +62,7 @@ export function toPython(program: readonly Command[], start?: Partial<TurtleStat
       switch (command.kind) {
         case 'forward':
         case 'backward':
-          push(`${command.kind}(${num(command.value)})`);
+          push(`${command.kind}(${command.byVar && forVar ? forVar : num(command.value)})`);
           break;
         case 'left':
         case 'right':
@@ -73,16 +83,21 @@ export function toPython(program: readonly Command[], start?: Partial<TurtleStat
         case 'fill':
           push(`fillcolor(${str(command.color)})`);
           push('begin_fill()');
-          emit(command.body, [...prefix, index], depth);
+          emit(command.body, [...prefix, index], depth, forVar);
           push('end_fill()');
           break;
-        case 'repeat': {
-          const loopVar = LOOP_VARS[depth] ?? `i${depth}`;
-          push(`for ${loopVar} in range(${command.times}):`);
+        case 'repeat':
+        case 'for': {
+          const name = loopVar(depth);
+          const range =
+            command.kind === 'repeat'
+              ? `${command.times}`
+              : `${num(command.from)}, ${num(command.to)}, ${num(command.step)}`;
+          push(`for ${name} in range(${range}):`);
           if (command.body.length === 0) {
             lines.push({ text: `${indent}    pass`, path: pathKey });
           }
-          emit(command.body, [...prefix, index], depth + 1);
+          emit(command.body, [...prefix, index], depth + 1, command.kind === 'for' ? name : forVar);
           break;
         }
       }

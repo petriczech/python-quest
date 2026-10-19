@@ -72,5 +72,6 @@ describe('úpravy programu', () => {
   it('nové bloky mají výchozí hodnoty', () => {
     expect(createBlock('repeat')).toEqual({ kind: 'repeat', times: 4, body: [] });
     expect(createBlock('left')).toEqual({ kind: 'left', angle: 90 });
+    expect(createBlock('for')).toEqual({ kind: 'for', from: 10, to: 200, step: 10, body: [] });
   });
 });

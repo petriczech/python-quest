@@ -137,4 +137,46 @@ describe('run', () => {
     expect(trace.truncated).toBe(true);
     expect(trace.steps).toHaveLength(MAX_STEPS);
   });
+
+  it('cyklus for dosadí proměnnou do délky a horní mez neprovede', () => {
+    const trace = run([
+      {
+        kind: 'for',
+        from: 10,
+        to: 40,
+        step: 10,
+        body: [
+          { kind: 'forward', value: 5, byVar: true },
+          { kind: 'left', angle: 90 },
+        ],
+      },
+    ]);
+    const lengths = trace.segments.map((s) => Math.hypot(s.to.x - s.from.x, s.to.y - s.from.y));
+    expect(lengths).toEqual([10, 20, 30]);
+  });
+
+  it('vnořené opakuj bere proměnnou z nejbližšího for', () => {
+    const trace = run([
+      {
+        kind: 'for',
+        from: 1,
+        to: 3,
+        step: 1,
+        body: [{ kind: 'repeat', times: 2, body: [{ kind: 'forward', value: 99, byVar: true }] }],
+      },
+    ]);
+    expect(trace.steps.map((s) => s.x)).toEqual([1, 2, 4, 6]);
+  });
+
+  it('délka z proměnné mimo for použije zadanou hodnotu', () => {
+    const trace = run([{ kind: 'forward', value: 7, byVar: true }]);
+    expect(trace.steps[0]?.x).toBe(7);
+  });
+
+  it('for s prázdným rozsahem nic neprovede', () => {
+    expect(
+      run([{ kind: 'for', from: 50, to: 10, step: 10, body: [{ kind: 'forward', value: 1 }] }])
+        .steps,
+    ).toHaveLength(0);
+  });
 });

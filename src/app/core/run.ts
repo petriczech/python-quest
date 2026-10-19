@@ -46,6 +46,8 @@ export function run(program: readonly Command[], start: Partial<TurtleState> = {
   const openFills: Point[][] = [];
   let truncated = false;
   let iterations = 0;
+  /** Hodnoty proměnných otevřených cyklů `for`, poslední je nejbližší */
+  const loopValues: number[] = [];
 
   const record = (path: number[]): void => {
     steps.push({ ...state, path, segmentCount: segments.length, fillCount: fills.length });
@@ -74,7 +76,8 @@ export function run(program: readonly Command[], start: Partial<TurtleState> = {
       switch (command.kind) {
         case 'forward':
         case 'backward': {
-          const distance = command.kind === 'forward' ? command.value : -command.value;
+          const length = command.byVar ? (loopValues.at(-1) ?? command.value) : command.value;
+          const distance = command.kind === 'forward' ? length : -length;
           const radians = (state.heading * Math.PI) / 180;
           moveTo(state.x + distance * Math.cos(radians), state.y + distance * Math.sin(radians));
           record(path);
@@ -118,6 +121,21 @@ export function run(program: readonly Command[], start: Partial<TurtleState> = {
               break;
             }
             exec(command.body, path);
+          }
+          break;
+        case 'for':
+          for (
+            let i = command.from;
+            command.step > 0 && i < command.to && !truncated;
+            i += command.step
+          ) {
+            if (++iterations > MAX_ITERATIONS) {
+              truncated = true;
+              break;
+            }
+            loopValues.push(i);
+            exec(command.body, path);
+            loopValues.pop();
           }
           break;
       }

@@ -2,13 +2,16 @@ export type MoveKind = 'forward' | 'backward';
 export type TurnKind = 'left' | 'right';
 
 export type Command =
-  | { kind: MoveKind; value: number }
+  /** `byVar`: délka je proměnná nejbližšího cyklu `for` */
+  | { kind: MoveKind; value: number; byVar?: boolean }
   | { kind: TurnKind; angle: number }
   | { kind: 'penUp' | 'penDown' }
   | { kind: 'goto'; x: number; y: number }
   | { kind: 'color'; value: string }
   | { kind: 'fill'; color: string; body: Command[] }
-  | { kind: 'repeat'; times: number; body: Command[] };
+  | { kind: 'repeat'; times: number; body: Command[] }
+  /** Cyklus s proměnnou jako Python `range(from, to, step)`, `to` se už neprovede */
+  | { kind: 'for'; from: number; to: number; step: number; body: Command[] };
 
 export type CommandKind = Command['kind'];
 
@@ -57,10 +60,10 @@ export interface Trace {
 export const DEFAULT_COLOR = '#12233B';
 
 export function hasBody(command: Command): command is Extract<Command, { body: Command[] }> {
-  return command.kind === 'repeat' || command.kind === 'fill';
+  return command.kind === 'repeat' || command.kind === 'for' || command.kind === 'fill';
 }
 
-/** Počet bloků včetně vnořených; `repeat` i `fill` jsou 1 blok. */
+/** Počet bloků včetně vnořených; `repeat`, `for` i `fill` jsou 1 blok. */
 export function countBlocks(program: readonly Command[]): number {
   return program.reduce(
     (sum, command) => sum + 1 + (hasBody(command) ? countBlocks(command.body) : 0),

@@ -59,7 +59,19 @@
             {{ label(command) }}
           </button>
 
-          @let number = numberOf(command);
+          @let variable = loopVarOf(path);
+          @let number = numberOf(command, variable);
+          @if (variable && (command.kind === 'forward' || command.kind === 'backward')) {
+            <button
+              type="button"
+              class="var-toggle"
+              [attr.aria-pressed]="!!command.byVar"
+              [attr.aria-label]="'Délka z proměnné ' + variable + ': ' + label(command)"
+              (click)="toggleVar(path, command)"
+            >
+              = {{ variable }}
+            </button>
+          }
           @if (number) {
             <span class="stepper">
               <button
@@ -105,6 +117,12 @@
             </select>
           }
 
+          @if (command.kind === 'for') {
+            <label class="coord">od <input type="number" [value]="command.from" [min]="limits.distance.min" [max]="limits.distance.max" (change)="setRange(path, command, 'from', +valueOf($event))" /></label>
+            <label class="coord">do <input type="number" [value]="command.to" [min]="limits.distance.min" [max]="limits.distance.max" (change)="setRange(path, command, 'to', +valueOf($event))" /></label>
+            <label class="coord">krok <input type="number" [value]="command.step" [min]="limits.rangeStep.min" [max]="limits.rangeStep.max" (change)="setRange(path, command, 'step', +valueOf($event))" /></label>
+          }
+
           @if (command.kind === 'goto') {
             <label class="coord">x <input type="number" [value]="command.x" (change)="setGoto(path, command, 'x', +valueOf($event))" /></label>
             <label class="coord">y <input type="number" [value]="command.y" (change)="setGoto(path, command, 'y', +valueOf($event))" /></label>
@@ -139,7 +157,7 @@
 <ng-container *ngTemplateOutlet="list; context: { commands: program(), parent: [] }" />
 <p class="hint-drop">
   @if (selected()) {
-    Nový blok se vloží do vybraného opakuj nebo výplně, jinak za vybraný blok. Výběr zrušíš dalším
+    Nový blok se vloží do vybraného opakuj, cyklu nebo výplně, jinak za vybraný blok. Výběr zrušíš dalším
     klikem.
   } @else {
     Klikni na blok v paletě, přidá se na konec programu.

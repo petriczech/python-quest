@@ -90,6 +90,23 @@
   border-radius: 8px;
 }
 
+.var-toggle {
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-code);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.var-toggle[aria-pressed='true'] {
+  background: var(--text);
+  color: var(--surface);
+}
+
 .stepper {
   display: inline-flex;
   align-items: center;

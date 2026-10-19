@@ -9,6 +9,9 @@ const penUp: Command = { kind: 'penUp' };
 const penDown: Command = { kind: 'penDown' };
 const repeat = (times: number, body: Command[]): Command => ({ kind: 'repeat', times, body });
 const fill = (color: string, body: Command[]): Command => ({ kind: 'fill', color, body });
+const loop = (from: number, to: number, step: number, body: Command[]): Command => ({ kind: 'for', from, to, step, body });
+/** Délka z proměnné cyklu `for` */
+const fwdVar: Command = { kind: 'forward', value: 10, byVar: true };
 
 const square = (side: number): Command[] =>
   [fwd(side), left(90), fwd(side), left(90), fwd(side), left(90), fwd(side), left(90)];
@@ -16,6 +19,7 @@ const square = (side: number): Command[] =>
 export const WORLDS: World[] = [
   { id: 1, title: 'Základy pohybu', description: 'Délky, pravé úhly, schody, písmena L, T, E.' },
   { id: 2, title: 'Mnohoúhelníky', description: 'Vnější úhel 360/n, hvězdy, opakuj.' },
+  { id: 3, title: 'Spirály', description: 'Cyklus s proměnnou: každý krok je delší než ten předchozí.' },
 ];
 
 export const LEVELS: Level[] = [
@@ -316,6 +320,50 @@ export const LEVELS: Level[] = [
     hints: [
       'Osten: vpravo 60, dopředu 40, vlevo 120, dopředu 40 a vpravo 60 zpátky do původního směru. Mezi ostny se otoč o 360 / 12.',
       'opakuj 12× [vpravo 60 → dopředu 40 → vlevo 120 → dopředu 40 → vpravo 60 → vlevo 30]',
+    ],
+  },
+
+  // SVĚT 3
+  {
+    id: '3-1',
+    world: 3,
+    index: 1,
+    title: 'Čtvercová spirála',
+    task: 'Nakresli spirálu: první čára má 10, každá další je o 10 delší a poslední má 190. Po každé čáře se otoč vlevo o 90°.',
+    reference: [loop(10, 200, 10, [fwdVar, left(90)])],
+    palette: ['forward', 'left', 'right', 'repeat', 'for'],
+    stars: { requires: ['for'], maxBlocks: 3 },
+    hints: [
+      'Cyklus for od 10 do 200 po 10 dá proměnné i hodnoty 10, 20 … 190. Dvoustovka už se neprovede. U bloku dopředu zapni „= i“.',
+      'cyklus for od 10 do 200 krok 10 [dopředu = i → vlevo 90]',
+    ],
+  },
+  {
+    id: '3-2',
+    world: 3,
+    index: 2,
+    title: 'Trojúhelníková spirála',
+    task: 'Spirála z čar o délkách 10, 20 … 240. Po každé čáře se otoč vlevo o 120°.',
+    reference: [loop(10, 250, 10, [fwdVar, left(120)])],
+    palette: ['forward', 'left', 'right', 'repeat', 'for'],
+    stars: { requires: ['for'], maxBlocks: 3 },
+    hints: [
+      'Stejné jako čtvercová spirála, jen jiný úhel a jiná horní mez.',
+      'cyklus for od 10 do 250 krok 10 [dopředu = i → vlevo 120]',
+    ],
+  },
+  {
+    id: '3-3',
+    world: 3,
+    index: 3,
+    title: 'Vír',
+    task: 'Šestiúhelníková spirála, která se stáčí: čáry 4, 8 … 136 a po každé otočka vlevo o 61°.',
+    reference: [loop(4, 140, 4, [fwdVar, left(61)])],
+    palette: ['forward', 'left', 'right', 'repeat', 'for'],
+    stars: { requires: ['for'], maxBlocks: 3 },
+    hints: [
+      'Při 60° by vznikl šestiúhelník, o stupeň víc a spirála se pootočí.',
+      'cyklus for od 4 do 140 krok 4 [dopředu = i → vlevo 61]',
     ],
   },
 ];

@@ -54,6 +54,35 @@ describe('toPython', () => {
     `);
   });
 
+  it('cyklus for vypíše range a proměnnou v délce', () => {
+    const text = pythonText(
+      toPython([
+        {
+          kind: 'for',
+          from: 5,
+          to: 200,
+          step: 5,
+          body: [
+            { kind: 'repeat', times: 1, body: [{ kind: 'forward', value: 9, byVar: true }] },
+            { kind: 'backward', value: 9, byVar: true },
+            { kind: 'left', angle: 90 },
+          ],
+        },
+        { kind: 'forward', value: 9, byVar: true },
+      ]),
+    );
+    expect(text).toContain(
+      [
+        'for i in range(5, 200, 5):',
+        '    for j in range(1):',
+        '        forward(i)',
+        '    backward(i)',
+        '    left(90)',
+        'forward(9)',
+      ].join('\n'),
+    );
+  });
+
   it('nastaví start, když není v počátku', () => {
     const text = pythonText(toPython([], { x: -75, y: -60, heading: 90 }));
     expect(text).toBe(

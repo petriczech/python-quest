@@ -13,6 +13,7 @@ import {
   shiftBlock,
 } from '../core/edit';
 import { Command, CommandKind, countBlocks, hasBody } from '../core/program';
+import { loopVar } from '../core/python';
 
 type BlockGroup = 'move' | 'turn' | 'repeat' | 'pen';
 
@@ -23,6 +24,7 @@ const GROUPS: Record<CommandKind, BlockGroup> = {
   left: 'turn',
   right: 'turn',
   repeat: 'repeat',
+  for: 'repeat',
   fill: 'pen',
   penUp: 'pen',
   penDown: 'pen',
@@ -35,6 +37,7 @@ const LIMITS = {
   distance: { min: 0, max: 400, step: 10 },
   angle: { min: 0, max: 360, step: 15 },
   times: { min: 1, max: 100, step: 1 },
+  rangeStep: { min: 1, max: 100, step: 1 },
 } as const;
 
 type Limit = keyof typeof LIMITS;
@@ -205,11 +208,45 @@ export class ProgramEditor {
     }
   }
 
-  protected numberOf(command: Command): { value: number; limit: Limit; unit: string } | null {
+  /** Proměnná nejbližšího nadřazeného cyklu `for`, jinak null */
+  protected loopVarOf(path: number[]): string | null {
+    let name: string | null = null;
+    let depth = 0;
+    for (let i = 1; i < path.length; i++) {
+      const parent = getBlock(this.program(), path.slice(0, i));
+      if (parent?.kind === 'for') {
+        name = loopVar(depth);
+      }
+      if (parent?.kind === 'for' || parent?.kind === 'repeat') {
+        depth++;
+      }
+    }
+    return name;
+  }
+
+  protected setRange(path: number[], command: Command, field: 'from' | 'to' | 'step', value: number): void {
+    if (command.kind === 'for') {
+      // Python range bere jen celá čísla
+      const v = clamp(Math.round(value), field === 'step' ? 'rangeStep' : 'distance');
+      this.set(replaceBlock(this.program(), path, { ...command, [field]: v }));
+    }
+  }
+
+  protected toggleVar(path: number[], command: Command): void {
+    if (command.kind === 'forward' || command.kind === 'backward') {
+      this.set(replaceBlock(this.program(), path, { ...command, byVar: !command.byVar }));
+    }
+  }
+
+  /** Číselná hodnota bloku; délka z proměnné cyklu žádnou nemá */
+  protected numberOf(
+    command: Command,
+    variable: string | null,
+  ): { value: number; limit: Limit; unit: string } | null {
     switch (command.kind) {
       case 'forward':
       case 'backward':
-        return { value: command.value, limit: 'distance', unit: '' };
+        return command.byVar && variable ? null : { value: command.value, limit: 'distance', unit: '' };
       case 'left':
       case 'right':
         return { value: command.angle, limit: 'angle', unit: '°' };

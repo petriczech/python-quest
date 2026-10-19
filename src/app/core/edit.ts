@@ -19,6 +19,7 @@ export const BLOCK_LABELS: Record<CommandKind, string> = {
   color: 'barva',
   fill: 'výplň',
   repeat: 'opakuj',
+  for: 'cyklus for',
 };
 
 export function createBlock(kind: CommandKind): Command {
@@ -41,6 +42,8 @@ export function createBlock(kind: CommandKind): Command {
       return { kind, color: '#E8632B', body: [] };
     case 'repeat':
       return { kind, times: 4, body: [] };
+    case 'for':
+      return { kind, from: 10, to: 200, step: 10, body: [] };
   }
 }
 

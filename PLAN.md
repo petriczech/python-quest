@@ -33,7 +33,7 @@ Oba odkazy jsou soukromé a otevře je jen přihlášený vlastník.
 
 ## Cíl a rozsah MVP
 
-MVP obsahuje hratelné světy 1–2 (25 úloh) v klikacím režimu: živý Python náhled, hvězdy, XP a uložený postup. Cílovka jsou studenti gymnázia, matika nejvýš sin/cos.
+MVP obsahuje hratelné světy 1–3 (28 úloh) v klikacím režimu: živý Python náhled, hvězdy, XP a uložený postup. Cílovka jsou studenti gymnázia, matika nejvýš sin/cos.
 
 **V MVP:**
 
@@ -224,8 +224,11 @@ Postup je zevnitř ven: nejdřív čisté jádro (interpret, trace, skóre) s te
 | 2 | 11 | „Kruh“ ze 36 kroků po 10° | aproximace kružnice |
 | 2 | 12 | Finále: větrník ze 4 trojúhelníků | vše z obou světů |
 | 2 | 13 | Kolo s 12 ostny o straně 40 | osten jako odbočka z mnohoúhelníku |
+| 3 | 1 | Čtvercová spirála 10 … 190 | blok `cyklus for`, délka `= i` |
+| 3 | 2 | Trojúhelníková spirála 10 … 240 | `range(od, do, krok)`, horní mez se neprovede |
+| 3 | 3 | Vír: čáry 4 … 136, otočka 61° | úhel o stupeň vedle mnohoúhelníku |
 
-Další světy přijdou po pilotu: 3 souřadnice, 4 vlajky, 5 Pythagoras, 6 sin/cos. Vzor se vykresluje z `reference`, takže kóta a hodnocení nemůžou nesouhlasit.
+Další světy přijdou po pilotu: souřadnice, vlajky, Pythagoras, sin/cos. Vzor se vykresluje z `reference`, takže kóta a hodnocení nemůžou nesouhlasit.
 
 ## Gamifikace: pravidla
 
