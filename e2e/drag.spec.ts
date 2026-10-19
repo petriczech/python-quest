@@ -60,6 +60,17 @@ test.describe('Drag & drop', () => {
     await expect(page.getByRole('dialog')).toBeVisible();
   });
 
+  test('tažení bloku o jedno místo dolů', async ({ page }) => {
+    await page.goto('/uloha/1-2');
+    await drag(
+      page,
+      page.getByRole('button', { name: 'vlevo, vložit za' }),
+      () => page.locator('#blocks-root > li').nth(1),
+      true,
+    );
+    await expect.poll(() => python(page)).toContain('forward(100)\nleft(90)\nforward(60)');
+  });
+
   test('blok jde vytáhnout z opakuj ven', async ({ page }) => {
     await page.goto('/uloha/1-12');
     const palette = page.getByRole('group', { name: 'Paleta bloků' });

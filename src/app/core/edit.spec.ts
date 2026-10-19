@@ -49,9 +49,15 @@ describe('úpravy programu', () => {
     expect(getBlock(result, [2])).toEqual({ kind: 'repeat', times: 2, body: [fwd(2)] });
   });
 
-  it('přesun dopředu ve stejném seznamu', () => {
-    const result = moveBlock(program, [0], [], 3);
-    expect(result.map((c) => (c.kind === 'forward' ? c.value : c.kind))).toEqual(['repeat', 4, 1]);
+  it.each([
+    [0, 1, [2, 1, 3]],
+    [0, 2, [2, 3, 1]],
+    [1, 2, [1, 3, 2]],
+    [2, 0, [3, 1, 2]],
+  ])('přesun ve stejném seznamu %i → %i jako CDK', (from, to, expected) => {
+    const list = [fwd(1), fwd(2), fwd(3)];
+    const result = moveBlock(list, [from], [], to);
+    expect(result.map((c) => (c.kind === 'forward' ? c.value : 0))).toEqual(expected);
   });
 
   it('přesun do repeat, který je za blokem', () => {

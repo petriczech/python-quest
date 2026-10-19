@@ -126,7 +126,7 @@ export function shiftBlock(program: readonly Command[], path: BlockPath, delta: 
   });
 }
 
-/** Přesune blok z `from` do seznamu `toParent` na `toIndex`. */
+/** Přesune blok z `from` do seznamu `toParent`; `toIndex` je výsledná pozice (jako CDK `currentIndex`). */
 export function moveBlock(
   program: readonly Command[],
   from: BlockPath,
@@ -143,7 +143,6 @@ export function moveBlock(
   }
   const fromParent = from.slice(0, -1);
   const fromIndex = from.at(-1) ?? 0;
-  const sameList = fromParent.length === toParent.length && fromParent.every((v, i) => toParent[i] === v);
   const removed = removeBlock(program, from);
   // Odebrání posune indexy v nadřazených seznamech cíle
   const adjustedParent = [...toParent];
@@ -155,6 +154,5 @@ export function moveBlock(
   ) {
     adjustedParent[depth] = (adjustedParent[depth] ?? 0) - 1;
   }
-  const adjustedIndex = sameList && toIndex > fromIndex ? toIndex - 1 : toIndex;
-  return insertBlock(removed, adjustedParent, block, adjustedIndex);
+  return insertBlock(removed, adjustedParent, block, toIndex);
 }
