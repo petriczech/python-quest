@@ -3,6 +3,7 @@ import {
   DestroyRef,
   ElementRef,
   computed,
+  effect,
   inject,
   input,
   linkedSignal,
@@ -21,7 +22,15 @@ import { rasterize } from '../core/raster';
 import { run } from '../core/run';
 import { MatchResult, PASS_PERCENT, feedback, match } from '../core/score';
 import { BLOCK_LABELS } from '../core/edit';
-import { CODE_XP_FACTOR, XP_PERFECT, XP_PER_HINT, XP_PER_STAR, evaluateCodeStars, starCount } from '../core/xp';
+import {
+  CODE_XP_FACTOR,
+  XP_PERFECT,
+  XP_PER_HINT,
+  XP_PER_STAR,
+  codeLines,
+  evaluateCodeStars,
+  starCount,
+} from '../core/xp';
 import { LEVELS, WORLDS, findLevel, nextLevel } from '../levels/levels';
 import { Attempt, ProgressStore } from '../progress/progress.store';
 import { PatternFigure } from './pattern-figure';
@@ -79,10 +88,17 @@ export class TaskPage {
   private readonly future = linkedSignal<Command[][]>(() => (this.level(), []));
 
   /** Bloky, nebo psaný kód v Pythonu */
-  protected readonly editMode = linkedSignal<EditMode>(() => (this.level(), 'blocks'));
+  /** Úloha jen pro kód začíná v kódu s kostrou za nastavením startu */
+  protected readonly codeOnly = computed(() => this.level()?.codeStarter !== undefined);
+  protected readonly editMode = linkedSignal<EditMode>(() => (this.codeOnly() ? 'code' : 'blocks'));
   protected readonly code = linkedSignal<string>(() => {
     const level = this.level();
-    return level ? (untracked(() => this.progress.codeDraft(level.id)) ?? '') : '';
+    if (!level) {
+      return '';
+    }
+    const draft = untracked(() => this.progress.codeDraft(level.id));
+    const starter = level.codeStarter;
+    return draft ?? (starter === undefined ? '' : `${pythonText(toPython([], levelStart(level)))}${starter}\n`);
   });
   /** Výsledek posledního běhu kódu; po změně kódu se zahodí */
   protected readonly codeResult = linkedSignal<string, PythonRunResult | null>({
@@ -140,12 +156,20 @@ export class TaskPage {
         { done: stars[0], text: `Shoda se vzorem aspoň ${PASS_PERCENT} %`, now: true },
         {
           done: stars[1],
-          text: requires.length
-            ? `Použij v kódu ${requires.map((k) => BLOCK_LABELS[k]).join(' a ')}`
-            : 'Struktura (tady stačí splnit)',
+          text: level.stars.recursion
+            ? 'Použij rekurzi: funkce volá sama sebe'
+            : requires.length
+              ? `Použij v kódu ${requires.map((k) => BLOCK_LABELS[k]).join(' a ')}`
+              : 'Struktura (tady stačí splnit)',
           now: evaluateCodeStars(level, this.code(), 100)[1],
         },
-        { done: stars[2], text: 'Úspornost se hodnotí jen v blocích', now: false },
+        level.stars.maxLines === undefined
+          ? { done: stars[2], text: 'Úspornost se hodnotí jen v blocích', now: false }
+          : {
+              done: stars[2],
+              text: `Nejvýš ${level.stars.maxLines} řádků kódu`,
+              now: codeLines(this.code()) <= level.stars.maxLines,
+            },
       ];
     }
     const kinds = usedKinds(this.program());
@@ -183,6 +207,12 @@ export class TaskPage {
 
   constructor() {
     inject(DestroyRef).onDestroy(() => cancelAnimationFrame(this.frame));
+    // V kódu se Python načítá hned, aby první spuštění nečekalo
+    effect(() => {
+      if (this.editMode() === 'code') {
+        untracked(() => this.python.preload());
+      }
+    });
   }
 
   // PROGRAM
@@ -241,7 +271,6 @@ export class TaskPage {
 
   protected setEditMode(mode: EditMode): void {
     if (mode === 'code') {
-      this.python.preload();
       if (!this.code().trim()) {
         this.code.set(pythonText(toPython(this.program(), this.start())));
       }

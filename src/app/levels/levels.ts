@@ -19,6 +19,30 @@ const star = (n: number, k: number, side: number): Command => repeat(n, [fwd(sid
 const squareRight = (side: number): Command => repeat(4, [fwd(side), right(90)]);
 const stepDown = (d: number): Command[] => [penUp, right(90), fwd(d), left(90), penDown];
 
+// Fraktály: stejná rekurze jako v řešení studenta, rozvinutá do bloků
+const koch = (d: number, n: number): Command[] =>
+  n === 0
+    ? [fwd(d)]
+    : [...koch(d / 3, n - 1), left(60), ...koch(d / 3, n - 1), right(120), ...koch(d / 3, n - 1), left(60), ...koch(d / 3, n - 1)];
+const tree = (d: number): Command[] =>
+  d < 12 ? [] : [fwd(d), left(30), ...tree(d - 12), right(60), ...tree(d - 12), left(30), back(d)];
+const sierpinski = (d: number, n: number): Command[] =>
+  n === 0
+    ? [repeat(3, [fwd(d), left(120)])]
+    : [
+        ...sierpinski(d / 2, n - 1),
+        fwd(d / 2),
+        ...sierpinski(d / 2, n - 1),
+        back(d / 2),
+        left(60),
+        fwd(d / 2),
+        right(60),
+        ...sierpinski(d / 2, n - 1),
+        left(60),
+        back(d / 2),
+        right(60),
+      ];
+
 const square = (side: number): Command[] =>
   [fwd(side), left(90), fwd(side), left(90), fwd(side), left(90), fwd(side), left(90)];
 
@@ -27,6 +51,7 @@ export const WORLDS: World[] = [
   { id: 2, title: 'Mnohoúhelníky', description: 'Vnější úhel 360/n, hvězdy, opakuj.' },
   { id: 3, title: 'Spirály', description: 'Cyklus s proměnnou: každý krok je delší než ten předchozí.' },
   { id: 4, title: 'Hvězdy a vzory', description: 'Hvězdy k · 360 / n, přerušované čáry, šachovnice a stíny.' },
+  { id: 5, title: 'Fraktály', description: 'Jen v Pythonu: funkce, která volá sama sebe.' },
 ];
 
 export const LEVELS: Level[] = [
@@ -506,6 +531,100 @@ export const LEVELS: Level[] = [
     hints: [
       'Barva, hvězda, posun o 12 dozadu bez pera. Celé třikrát s jinou barvou.',
       'barva fialová → opakuj 5× [dopředu 150 → vpravo 144] → pero nahoru → dozadu 12 → pero dolů → barva modrá → …',
+    ],
+  },
+
+  // SVĚT 5: jen psaný kód, reference se skládají stejnou rekurzí, jakou píše student
+  {
+    id: '5-1',
+    world: 5,
+    index: 1,
+    title: 'Kochova křivka',
+    task: 'Napiš funkci koch(d, n). Při n = 0 jen jde dopředu o d. Jinak nakreslí čtyři křivky koch(d / 3, n - 1) a mezi nimi se otočí vlevo 60, vpravo 120 a vlevo 60. Nakresli koch(270, 3).',
+    reference: koch(270, 3),
+    palette: [],
+    codeStarter: [
+      'def koch(d, n):',
+      '    if n == 0:',
+      '        forward(d)',
+      '        return',
+      '    # Doplň: čtyři menší křivky koch(d / 3, n - 1) a otočky mezi nimi',
+      '',
+      'koch(270, 3)',
+    ].join('\n'),
+    stars: { recursion: true, maxLines: 16 },
+    hints: [
+      'Funkce volá sama sebe s menším d i n. Až n klesne na 0, kreslí se rovná čára.',
+      'koch(d / 3, n - 1) → left(60) → koch(d / 3, n - 1) → right(120) → koch(d / 3, n - 1) → left(60) → koch(d / 3, n - 1)',
+    ],
+  },
+  {
+    id: '5-2',
+    world: 5,
+    index: 2,
+    title: 'Kochova vločka',
+    task: 'Ze tří Kochových křivek koch(162, 3) slož vločku: po každé křivce se otoč vpravo o 120°.',
+    reference: [...koch(162, 3), right(120), ...koch(162, 3), right(120), ...koch(162, 3), right(120)],
+    palette: [],
+    codeStarter: [
+      'def koch(d, n):',
+      '    # Doplň: stejná funkce jako v minulé úloze',
+      '    forward(d)',
+      '',
+      'for i in range(3):',
+      '    koch(162, 3)',
+      '    right(120)',
+    ].join('\n'),
+    stars: { recursion: true, maxLines: 18 },
+    hints: [
+      'Funkci koch z minulé úlohy stačí zkopírovat. Otočka vpravo dá hroty křivek ven z trojúhelníku.',
+      'def koch(d, n): … stejně jako v úloze 1, pak for i in range(3): koch(162, 3) → right(120)',
+    ],
+  },
+  {
+    id: '5-3',
+    world: 5,
+    index: 3,
+    title: 'Strom',
+    task: 'Strom roste nahoru. Větev d: kmen dopředu d, vlevo 30 a menší větev d - 12, vpravo 60 a další menší větev, vlevo 30 a zpátky o d. Větev kratší než 12 se už nekreslí. Nakresli strom(72).',
+    reference: [left(90), ...tree(72)],
+    palette: [],
+    codeStarter: [
+      'def strom(d):',
+      '    if d < 12:',
+      '        return',
+      '    # Doplň: kmen, levá a pravá menší větev a návrat na začátek',
+      '',
+      'left(90)',
+      'strom(72)',
+    ].join('\n'),
+    stars: { recursion: true, maxLines: 16 },
+    hints: [
+      'Po nakreslení obou menších větví musí želva stát a dívat se stejně jako na začátku, proto na konci vlevo 30 a dozadu o d.',
+      'forward(d) → left(30) → strom(d - 12) → right(60) → strom(d - 12) → left(30) → backward(d)',
+    ],
+  },
+  {
+    id: '5-4',
+    world: 5,
+    index: 4,
+    title: 'Sierpinského trojúhelník',
+    task: 'Funkce sierpinski(d, n): při n = 0 nakreslí trojúhelník se stranou d. Jinak nakreslí tři trojúhelníky sierpinski(d / 2, n - 1): vlevo dole, vpravo dole a nahoře, a vrátí se na start. Nakresli sierpinski(240, 3).',
+    reference: sierpinski(240, 3),
+    palette: [],
+    codeStarter: [
+      'def sierpinski(d, n):',
+      '    if n == 0:',
+      '        # Doplň: trojúhelník se stranou d',
+      '        return',
+      '    # Doplň: tři menší trojúhelníky sierpinski(d / 2, n - 1)',
+      '',
+      'sierpinski(240, 3)',
+    ].join('\n'),
+    stars: { recursion: true, maxLines: 22 },
+    hints: [
+      'Mezi menšími trojúhelníky se přesuň o d / 2: doprava, zpátky, pak šikmo nahoru pod úhlem 60° a nakonec zpátky dolů.',
+      'sierpinski(d/2) → forward(d/2) → sierpinski(d/2) → backward(d/2) → left(60) → forward(d/2) → right(60) → sierpinski(d/2) → left(60) → backward(d/2) → right(60)',
     ],
   },
 ];

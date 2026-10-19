@@ -42,12 +42,50 @@ export function evaluateStars(level: Level, program: readonly Command[], percent
   return [solved, solved && structure, solved && economy];
 }
 
-/** Hvězdy za psaný kód: tvar a struktura; úspornost se hodnotí jen v blocích. */
+/**
+ * Hvězdy za psaný kód: tvar, struktura (konstrukce a případně rekurze) a úspornost podle
+ * počtu řádků. Úloha bez `maxLines` hodnotí úspornost jen v blocích.
+ */
 export function evaluateCodeStars(level: Level, code: string, percent: number): Stars {
   const solved = percent >= PASS_PERCENT;
   const source = withoutCommentsAndStrings(code);
-  const structure = (level.stars.requires ?? []).every((kind) => CODE_PATTERNS[kind]?.test(source) ?? true);
-  return [solved, solved && structure, false];
+  const structure =
+    (level.stars.requires ?? []).every((kind) => CODE_PATTERNS[kind]?.test(source) ?? true) &&
+    (!level.stars.recursion || hasRecursion(source));
+  const economy = level.stars.maxLines !== undefined && codeLines(source) <= level.stars.maxLines;
+  return [solved, solved && structure, solved && economy];
+}
+
+/** Počet řádků s kódem (bez prázdných a komentářů) */
+export function codeLines(code: string): number {
+  return withoutCommentsAndStrings(code)
+    .split('\n')
+    .filter((line) => line.trim()).length;
+}
+
+/** Některá funkce volá ve svém těle sama sebe */
+export function hasRecursion(code: string): boolean {
+  const lines = code.split('\n');
+  return lines.some((line, index) => {
+    const def = /^(\s*)def\s+(\w+)\s*\(/.exec(line);
+    if (!def) {
+      return false;
+    }
+    const indent = def[1]?.length ?? 0;
+    const call = new RegExp(`\\b${def[2]}\\s*\\(`);
+    for (const next of lines.slice(index + 1)) {
+      if (!next.trim()) {
+        continue;
+      }
+      if ((/^\s*/.exec(next)?.[0].length ?? 0) <= indent) {
+        return false;
+      }
+      if (call.test(next)) {
+        return true;
+      }
+    }
+    return false;
+  });
 }
 
 /** Kód bez komentářů a textových řetězců, aby `# for` nebo `"for"` nesplnily strukturu */

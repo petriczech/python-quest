@@ -99,3 +99,51 @@ test('kód beze změny převzatý z bloků se jako psaný kód nepočítá', asy
   await expect(dialog.getByText('Napsáno v Pythonu')).toHaveCount(0);
   await expect(dialog.getByText('Získáno +70 XP.')).toBeVisible();
 });
+
+test('fraktál: úloha jen v kódu začne kostrou a rekurze dá tři hvězdy', async ({ page }) => {
+  test.setTimeout(90_000);
+  const worlds = [1, 2, 3, 4].flatMap((world) =>
+    Array.from({ length: 13 }, (_, i) => `${world}-${i + 1}`),
+  );
+  await seedProgress(page, { solved: [...worlds, '5-1', '5-2'] });
+  await page.goto('/uloha/5-3');
+
+  await expect(page.getByRole('button', { name: 'Bloky' })).toHaveCount(0);
+  const editor = page.getByRole('textbox', { name: 'Python kód' });
+  await expect(editor).toContainText('def strom(d):');
+  await expect(page.getByText('Načítá se Python')).toBeHidden({ timeout: 60_000 });
+
+  await editor.click();
+  await page.keyboard.press('ControlOrMeta+A');
+  const start = await page.evaluate(() => document.querySelector('.cm-content')?.textContent ?? '');
+  expect(start).toContain('goto(');
+  const goto = /goto\([^)]*\)/.exec(start)?.[0] ?? 'goto(0, 0)';
+  await page.keyboard.insertText(
+    [
+      'from turtle import *',
+      'penup()',
+      goto,
+      'pendown()',
+      'def strom(d):',
+      '    if d < 12:',
+      '        return',
+      '    forward(d)',
+      '    left(30)',
+      '    strom(d - 12)',
+      '    right(60)',
+      '    strom(d - 12)',
+      '    left(30)',
+      '    backward(d)',
+      'left(90)',
+      'strom(72)',
+    ].join('\n'),
+  );
+  await runInstantly(page);
+
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible({ timeout: 30_000 });
+  await expect(dialog.getByRole('img', { name: '3 ze 3 hvězd' })).toBeVisible();
+  await expect(dialog.getByText('Napsáno v Pythonu')).toBeVisible();
+  // 3 hvězdy + přesně 100 % = 70 XP, v kódu ×2
+  await expect(dialog.getByText('Získáno +140 XP.')).toBeVisible();
+});

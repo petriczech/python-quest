@@ -152,7 +152,9 @@
     <!-- BLOKY / KÓD -->
     <section class="column program-column" aria-label="Program">
       <div class="modes edit-modes" role="group" aria-label="Způsob programování">
-        <button type="button" [attr.aria-pressed]="editMode() === 'blocks'" (click)="setEditMode('blocks')">Bloky</button>
+        @if (!codeOnly()) {
+          <button type="button" [attr.aria-pressed]="editMode() === 'blocks'" (click)="setEditMode('blocks')">Bloky</button>
+        }
         <button type="button" [attr.aria-pressed]="editMode() === 'code'" (click)="setEditMode('code')">
           Kód v Pythonu <span class="badge-x2">XP ×2</span>
         </button>
@@ -186,7 +188,9 @@
             <p class="code-status">Načítá se editor…</p>
           }
           <div class="history">
-            <button type="button" class="btn" (click)="codeFromBlocks()">Převzít z bloků</button>
+            @if (!codeOnly()) {
+              <button type="button" class="btn" (click)="codeFromBlocks()">Převzít z bloků</button>
+            }
             <span class="code-status" aria-live="polite">
               @switch (python.state()) {
                 @case ('loading') {

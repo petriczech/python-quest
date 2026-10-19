@@ -2,6 +2,8 @@ import { findLevel } from '../levels/levels';
 import { Level } from './level';
 import {
   Stars,
+  codeLines,
+  hasRecursion,
   bumpStreak,
   currentStreak,
   evaluateCodeStars,
@@ -81,6 +83,36 @@ describe('XP', () => {
     const record = { stars: [true, true, false] as Stars, bestMatch: 98, perfect: false, hintsUsed: 1, firstTry: true };
     expect(levelXp(record)).toBe(30);
     expect(levelXp({ ...record, code: true })).toBe(70);
+  });
+});
+
+describe('rekurze a řádky kódu', () => {
+  const koch = [
+    'def koch(d, n):',
+    '    if n == 0:',
+    '        forward(d)  # konec',
+    '        return',
+    '    koch(d / 3, n - 1)',
+    '',
+    'koch(270, 3)',
+  ].join('\n');
+
+  it('pozná funkci, která volá sama sebe', () => {
+    expect(hasRecursion(koch)).toBe(true);
+    expect(hasRecursion('def a(n):\n    forward(n)\na(5)\n')).toBe(false);
+    expect(hasRecursion('def a(n):\n    b(n)\ndef b(n):\n    a(n)\n')).toBe(false);
+  });
+
+  it('počítá jen řádky s kódem', () => {
+    expect(codeLines(koch)).toBe(6);
+    expect(codeLines('# jen komentář\n\nforward(1)\n')).toBe(1);
+  });
+
+  it('úloha s rekurzí a limitem řádků', () => {
+    const level = { stars: { recursion: true, maxLines: 6 } } as Level;
+    expect(evaluateCodeStars(level, koch, 99)).toEqual([true, true, true]);
+    expect(evaluateCodeStars({ stars: { recursion: true, maxLines: 5 } } as Level, koch, 99)).toEqual([true, true, false]);
+    expect(evaluateCodeStars(level, 'forward(270)\n', 99)).toEqual([true, false, true]);
   });
 });
 

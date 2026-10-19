@@ -33,7 +33,7 @@ Oba odkazy jsou soukromé a otevře je jen přihlášený vlastník.
 
 ## Cíl a rozsah MVP
 
-MVP obsahuje hratelné světy 1–4 (36 úloh) v klikacím režimu: živý Python náhled, hvězdy, XP a uložený postup. Cílovka jsou studenti gymnázia, matika nejvýš sin/cos.
+MVP obsahuje hratelné světy 1–5 (40 úloh): 1–4 v klikacím režimu i v psaném Pythonu, 5 jen v Pythonu: živý Python náhled, hvězdy, XP a uložený postup. Cílovka jsou studenti gymnázia, matika nejvýš sin/cos.
 
 **V MVP:**
 
@@ -241,6 +241,15 @@ Postup je zevnitř ven: nejdřív čisté jádro (interpret, trace, skóre) s te
 | 4 | 8 | Stínovaná hvězda | barvy pera, posun dozadu |
 
 Svět 4 vychází ze cvičení studentů (`hvezdy.py`, `cviceni_sedm.py`, `sachovnice.py`, `cviceni_osm.py`, `stiny.py`). Funkce s parametry z originálů zatím bloky neumí, úloha je vždy jedna konkrétní instance.
+
+| svět | # | úloha | učí |
+|---|---|---|---|
+| 5 | 1 | Kochova křivka koch(270, 3) | rekurze se zmenšením d / 3 |
+| 5 | 2 | Kochova vločka ze 3 křivek koch(162, 3) | opakované volání rekurzivní funkce |
+| 5 | 3 | Strom: kmen 72, větve o 12 kratší, 30° | dvě rekurzivní volání a návrat na start |
+| 5 | 4 | Sierpinského trojúhelník (240, 3) | tři volání a přesuny mezi nimi |
+
+Svět 5 je jen pro psaný kód (`codeStarter`: editor začne nastavením startu a kostrou funkce). Hvězdy: tvar, rekurze (funkce volá sama sebe), nejvýš `maxLines` řádků kódu. Reference se skládají stejnou rekurzí v TS a test v Pyodide ověřuje, že vzorová řešení dají 100 % a tři hvězdy.
 
 Další světy přijdou po pilotu: souřadnice, vlajky, Pythagoras, sin/cos. Vzor se vykresluje z `reference`, takže kóta a hodnocení nemůžou nesouhlasit.
 

@@ -13,7 +13,16 @@ export interface Level {
   /** Povolené bloky v paletě */
   palette: CommandKind[];
   starter?: Command[];
-  stars: { requires?: CommandKind[]; maxBlocks?: number };
+  /** Úloha jen pro psaný kód: bloky nejsou, editor začne touto kostrou (za nastavením startu) */
+  codeStarter?: string;
+  stars: {
+    requires?: CommandKind[];
+    maxBlocks?: number;
+    /** Psaný kód: funkce, která volá sama sebe */
+    recursion?: boolean;
+    /** Psaný kód: nejvýš tolik řádků (bez prázdných a komentářů) */
+    maxLines?: number;
+  };
   /** Stupně nápovědy: slovní tip → kostra programu */
   hints: string[];
 }
