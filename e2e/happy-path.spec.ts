@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { runInstantly } from './helpers';
+import { runInstantly, seedProgress, worldOneUpTo } from './helpers';
 
 test.describe('Happy path', () => {
   test('mapa → úloha → splnění → XP v hlavičce', async ({ page }) => {
@@ -42,6 +42,18 @@ test.describe('Happy path', () => {
     await expect(page.getByRole('dialog')).toBeHidden();
     await expect(page.locator('.score-value')).not.toHaveText('100 %');
     await expect(page.getByRole('status')).toBeVisible();
+  });
+
+  test('výplň ukazuje vybranou barvu', async ({ page }) => {
+    await seedProgress(page, { solved: [...worldOneUpTo(12), ...['2-1', '2-2', '2-3', '2-4', '2-5', '2-6', '2-7']] });
+    await page.goto('/uloha/2-8');
+    await page.getByRole('group', { name: 'Paleta bloků' }).getByRole('button', { name: 'výplň' }).click();
+    const select = page.getByLabel('Barva: výplň');
+    await expect(select.locator('option:checked')).toHaveText('oranžová');
+
+    await select.selectOption({ label: 'modrá' });
+    await expect(select.locator('option:checked')).toHaveText('modrá');
+    await expect(page.getByLabel('Python kód programu')).toContainText('fillcolor("#1F5FBF")');
   });
 
   test('zamčená úloha se neotevře', async ({ page }) => {

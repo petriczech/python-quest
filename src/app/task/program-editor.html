@@ -118,7 +118,7 @@
               (change)="setColor(path, command, valueOf($event))"
             >
               @for (option of colors; track option.value) {
-                <option [value]="option.value">{{ option.label }}</option>
+                <option [value]="option.value" [selected]="option.value === color">{{ option.label }}</option>
               }
             </select>
           }
