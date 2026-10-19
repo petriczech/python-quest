@@ -8,14 +8,20 @@
   [cdkDropListData]="paletteId"
   [cdkDropListConnectedTo]="listIds()"
   [cdkDropListEnterPredicate]="noEnter"
+  (cdkDropListExited)="leavePalette($event.item.data)"
+  (cdkDropListEntered)="outOfPalette.set(null)"
 >
   @for (kind of palette(); track kind) {
+    @if (outOfPalette() === kind) {
+      <span class="block-button ghost" [class]="'g-' + group(kind)" aria-hidden="true">{{ labels[kind] }}</span>
+    }
     <button
       type="button"
       class="block-button"
       [class]="'g-' + group(kind)"
       cdkDrag
       [cdkDragData]="kind"
+      (cdkDragEnded)="outOfPalette.set(null)"
       (click)="add(kind)"
     >
       {{ labels[kind] }}

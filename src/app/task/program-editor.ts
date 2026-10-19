@@ -65,6 +65,8 @@ export class ProgramEditor {
   protected readonly colors = PEN_COLORS;
   protected readonly limits = LIMITS;
   protected readonly selected = signal<number[] | null>(null);
+  /** Blok tažený z palety mimo ni: jeho místo drží zástupce, aby se rozložení pod paletou neposunulo */
+  protected readonly outOfPalette = signal<CommandKind | null>(null);
   protected readonly blockCountLabel = computed(() => {
     const n = countBlocks(this.program());
     if (n === 1) {
@@ -137,6 +139,10 @@ export class ProgramEditor {
     }
     this.set(moveBlock(this.program(), [...source, event.previousIndex], target, event.currentIndex));
     this.selected.set(null);
+  }
+
+  protected leavePalette(kind: unknown): void {
+    this.outOfPalette.set(kind as CommandKind);
   }
 
   protected select(path: number[]): void {

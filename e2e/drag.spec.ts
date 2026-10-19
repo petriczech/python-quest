@@ -71,6 +71,18 @@ test.describe('Drag & drop', () => {
     await expect.poll(() => python(page)).toContain('forward(100)\nleft(90)\nforward(60)');
   });
 
+  test('blok z palety jde přetáhnout na konec opakuj', async ({ page }) => {
+    await page.goto('/uloha/1-12');
+    const palette = page.getByRole('group', { name: 'Paleta bloků' });
+    await page.getByRole('button', { name: 'opakuj, vložit dovnitř' }).click();
+    await palette.getByRole('button', { name: 'dopředu' }).click();
+    await page.getByRole('button', { name: 'opakuj, vložit dovnitř' }).click();
+    await expect.poll(() => python(page)).toContain('for i in range(4):\n    forward(100)');
+
+    await drag(page, palette.getByRole('button', { name: 'vlevo' }), page.locator('#blocks-0'), true);
+    await expect.poll(() => python(page)).toContain('for i in range(4):\n    forward(100)\n    left(90)');
+  });
+
   test('blok jde vytáhnout z opakuj ven', async ({ page }) => {
     await page.goto('/uloha/1-12');
     const palette = page.getByRole('group', { name: 'Paleta bloků' });
