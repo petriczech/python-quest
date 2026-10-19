@@ -33,7 +33,7 @@ Oba odkazy jsou soukromé a otevře je jen přihlášený vlastník.
 
 ## Cíl a rozsah MVP
 
-MVP obsahuje hratelné světy 1–3 (28 úloh) v klikacím režimu: živý Python náhled, hvězdy, XP a uložený postup. Cílovka jsou studenti gymnázia, matika nejvýš sin/cos.
+MVP obsahuje hratelné světy 1–4 (36 úloh) v klikacím režimu: živý Python náhled, hvězdy, XP a uložený postup. Cílovka jsou studenti gymnázia, matika nejvýš sin/cos.
 
 **V MVP:**
 
@@ -227,6 +227,16 @@ Postup je zevnitř ven: nejdřív čisté jádro (interpret, trace, skóre) s te
 | 3 | 1 | Čtvercová spirála 10 … 190 | blok `cyklus for`, délka `= i` |
 | 3 | 2 | Trojúhelníková spirála 10 … 240 | `range(od, do, krok)`, horní mez se neprovede |
 | 3 | 3 | Vír: čáry 4 … 136, otočka 61° | úhel o stupeň vedle mnohoúhelníku |
+| 4 | 1 | Osmicípá hvězda k = 3 | otočka k · 360 / n |
+| 4 | 2 | Devíticípá hvězda k = 4 | totéž s jinými čísly |
+| 4 | 3 | Falešné kolo 36 × (120, vlevo 70) | kolik otáček, než se obrazec uzavře |
+| 4 | 4 | Špičky hvězdy | pero nahoru/dolů uvnitř opakuj |
+| 4 | 5 | Hvězda bez špiček | opak předchozí |
+| 4 | 6 | Šachovnice: sloupec 8 čtverců | výplně dvou barev, posun bez pera |
+| 4 | 7 | Hvězda ze čtverců | přesun na protější roh, otočka 90 + 360 / n |
+| 4 | 8 | Stínovaná hvězda | barvy pera, posun dozadu |
+
+Svět 4 vychází ze cvičení studentů (`hvezdy.py`, `cviceni_sedm.py`, `sachovnice.py`, `cviceni_osm.py`, `stiny.py`). Funkce s parametry z originálů zatím bloky neumí, úloha je vždy jedna konkrétní instance.
 
 Další světy přijdou po pilotu: souřadnice, vlajky, Pythagoras, sin/cos. Vzor se vykresluje z `reference`, takže kóta a hodnocení nemůžou nesouhlasit.
 

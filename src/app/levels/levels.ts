@@ -12,6 +12,12 @@ const fill = (color: string, body: Command[]): Command => ({ kind: 'fill', color
 const loop = (from: number, to: number, step: number, body: Command[]): Command => ({ kind: 'for', from, to, step, body });
 /** Délka z proměnné cyklu `for` */
 const fwdVar: Command = { kind: 'forward', value: 10, byVar: true };
+const color = (value: string): Command => ({ kind: 'color', value });
+/** Hvězda: n čar a po každé otočka vpravo o k · 360 / n */
+const star = (n: number, k: number, side: number): Command => repeat(n, [fwd(side), right((k * 360) / n)]);
+/** Čtverec doprava, jako `barevny_ctverecek` ze šachovnice */
+const squareRight = (side: number): Command => repeat(4, [fwd(side), right(90)]);
+const stepDown = (d: number): Command[] => [penUp, right(90), fwd(d), left(90), penDown];
 
 const square = (side: number): Command[] =>
   [fwd(side), left(90), fwd(side), left(90), fwd(side), left(90), fwd(side), left(90)];
@@ -20,6 +26,7 @@ export const WORLDS: World[] = [
   { id: 1, title: 'Základy pohybu', description: 'Délky, pravé úhly, schody, písmena L, T, E.' },
   { id: 2, title: 'Mnohoúhelníky', description: 'Vnější úhel 360/n, hvězdy, opakuj.' },
   { id: 3, title: 'Spirály', description: 'Cyklus s proměnnou: každý krok je delší než ten předchozí.' },
+  { id: 4, title: 'Hvězdy a vzory', description: 'Hvězdy k · 360 / n, přerušované čáry, šachovnice a stíny.' },
 ];
 
 export const LEVELS: Level[] = [
@@ -364,6 +371,141 @@ export const LEVELS: Level[] = [
     hints: [
       'Při 60° by vznikl šestiúhelník, o stupeň víc a spirála se pootočí.',
       'cyklus for od 4 do 140 krok 4 [dopředu = i → vlevo 61]',
+    ],
+  },
+
+  // SVĚT 4
+  {
+    id: '4-1',
+    world: 4,
+    index: 1,
+    title: 'Osmicípá hvězda',
+    task: 'Hvězda s 8 cípy a krokem k = 3: osmkrát čára 150 a otočka vpravo o k · 360 / 8.',
+    reference: [star(8, 3, 150)],
+    palette: ['forward', 'left', 'right', 'repeat'],
+    stars: { requires: ['repeat'], maxBlocks: 3 },
+    hints: ['3 · 360 / 8 = ?', 'opakuj 8× [dopředu 150 → vpravo 135]'],
+  },
+  {
+    id: '4-2',
+    world: 4,
+    index: 2,
+    title: 'Devíticípá hvězda',
+    task: 'Hvězda s 9 cípy a krokem k = 4, strana 150. Úhel otočky spočítej stejně jako u osmicípé.',
+    reference: [star(9, 4, 150)],
+    palette: ['forward', 'left', 'right', 'repeat'],
+    stars: { requires: ['repeat'], maxBlocks: 3 },
+    hints: ['4 · 360 / 9 = ?', 'opakuj 9× [dopředu 150 → vpravo 160]'],
+  },
+  {
+    id: '4-3',
+    world: 4,
+    index: 3,
+    title: 'Falešné kolo',
+    task: 'Třicet šestkrát čára 120 a otočka vlevo o 70°. Kolik celých otáček želva udělá?',
+    reference: [repeat(36, [fwd(120), left(70)])],
+    palette: ['forward', 'left', 'right', 'repeat'],
+    stars: { requires: ['repeat'], maxBlocks: 3 },
+    hints: ['36 · 70 = 2520 = 7 · 360, takže se obrazec uzavře.', 'opakuj 36× [dopředu 120 → vlevo 70]'],
+  },
+  {
+    id: '4-4',
+    world: 4,
+    index: 4,
+    title: 'Špičky hvězdy',
+    task: 'Z osmicípé hvězdy (strana 150, otočka 135°) nakresli jen špičky: každé rameno špičky má 30.',
+    reference: [repeat(8, [penUp, fwd(90), penDown, fwd(30), right(135), fwd(30)])],
+    palette: ['forward', 'left', 'right', 'repeat', 'penUp', 'penDown'],
+    stars: { requires: ['repeat', 'penUp'], maxBlocks: 7 },
+    hints: [
+      'Na každé straně: 90 bez pera, 30 s perem, otočka a 30 s perem už na další straně. 30 + 90 + 30 = 150.',
+      'opakuj 8× [pero nahoru → dopředu 90 → pero dolů → dopředu 30 → vpravo 135 → dopředu 30]',
+    ],
+  },
+  {
+    id: '4-5',
+    world: 4,
+    index: 5,
+    title: 'Hvězda bez špiček',
+    task: 'Opak předchozí úlohy: stejná hvězda, ale špičky s rameny 30 vynech.',
+    reference: [repeat(8, [fwd(90), penUp, fwd(30), right(135), fwd(30), penDown])],
+    palette: ['forward', 'left', 'right', 'repeat', 'penUp', 'penDown'],
+    stars: { requires: ['repeat', 'penUp'], maxBlocks: 7 },
+    hints: [
+      'Kresli 90, pak zvedni pero na špičku: 30, otočka, 30, a pero zase dolů.',
+      'opakuj 8× [dopředu 90 → pero nahoru → dopředu 30 → vpravo 135 → dopředu 30 → pero dolů]',
+    ],
+  },
+  {
+    id: '4-6',
+    world: 4,
+    index: 6,
+    title: 'Šachovnice',
+    task: 'Sloupec 8 vybarvených čtverců se stranou 30, střídavě modrý a oranžový, shora dolů. Čtverec kresli doprava.',
+    reference: [
+      repeat(4, [
+        fill('#1F5FBF', [squareRight(30)]),
+        ...stepDown(30),
+        fill('#E8632B', [squareRight(30)]),
+        ...stepDown(30),
+      ]),
+    ],
+    palette: ['forward', 'left', 'right', 'repeat', 'fill', 'penUp', 'penDown'],
+    stars: { requires: ['repeat', 'fill'], maxBlocks: 19 },
+    hints: [
+      'Modrý čtverec, posun o 30 dolů bez pera (vpravo 90, dopředu 30, vlevo 90), oranžový čtverec, posun. A to 4×.',
+      'opakuj 4× [výplň modrá [opakuj 4× [dopředu 30 → vpravo 90]] → pero nahoru → vpravo 90 → dopředu 30 → vlevo 90 → pero dolů → totéž s oranžovou]',
+    ],
+  },
+  {
+    id: '4-7',
+    world: 4,
+    index: 7,
+    title: 'Hvězda ze čtverců',
+    task: 'Osm oranžových čtverců se stranou 40 do kruhu. Po čtverci přejdi bez pera na jeho protější roh a otoč se vpravo o 90 + 360 / 8.',
+    reference: [
+      repeat(8, [
+        fill('#E8632B', [repeat(4, [fwd(40), left(90)])]),
+        penUp,
+        fwd(40),
+        left(90),
+        fwd(40),
+        penDown,
+        right(135),
+      ]),
+    ],
+    palette: ['forward', 'left', 'right', 'repeat', 'fill', 'penUp', 'penDown'],
+    stars: { requires: ['repeat', 'fill'], maxBlocks: 11 },
+    hints: [
+      'Čtverec doleva ve výplni, pak pero nahoru, dopředu 40, vlevo 90, dopředu 40, pero dolů a vpravo 135.',
+      'opakuj 8× [výplň [opakuj 4× [dopředu 40 → vlevo 90]] → pero nahoru → dopředu 40 → vlevo 90 → dopředu 40 → pero dolů → vpravo 135]',
+    ],
+  },
+  {
+    id: '4-8',
+    world: 4,
+    index: 8,
+    title: 'Stínovaná hvězda',
+    task: 'Tři pěticípé hvězdy se stranou 150 (otočka vpravo 144°): fialová, modrá a černá, každá o 12 dozadu bez pera.',
+    reference: [
+      color('#6B4FBB'),
+      star(5, 2, 150),
+      penUp,
+      back(12),
+      penDown,
+      color('#1F5FBF'),
+      star(5, 2, 150),
+      penUp,
+      back(12),
+      penDown,
+      color('#12233B'),
+      star(5, 2, 150),
+    ],
+    palette: ['forward', 'backward', 'left', 'right', 'repeat', 'penUp', 'penDown', 'color'],
+    stars: { requires: ['repeat', 'color'], maxBlocks: 18 },
+    hints: [
+      'Barva, hvězda, posun o 12 dozadu bez pera. Celé třikrát s jinou barvou.',
+      'barva fialová → opakuj 5× [dopředu 150 → vpravo 144] → pero nahoru → dozadu 12 → pero dolů → barva modrá → …',
     ],
   },
 ];
