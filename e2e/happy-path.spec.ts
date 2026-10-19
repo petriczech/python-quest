@@ -7,7 +7,7 @@ test.describe('Happy path', () => {
     await expect(page.getByRole('heading', { name: 'Základy pohybu' })).toBeVisible();
     await expect(page.getByText('0 / 200 XP')).toBeVisible();
 
-    await page.getByRole('link', { name: 'Začít' }).click();
+    await page.getByRole('link', { name: 'Začít' }).first().click();
     await expect(page).toHaveURL(/\/uloha\/1-1$/);
     await expect(page.getByRole('heading', { name: 'Úsečka', level: 1 })).toBeVisible();
 
@@ -56,7 +56,15 @@ test.describe('Happy path', () => {
     await expect(page.getByLabel('Python kód programu')).toContainText('fillcolor("#1F5FBF")');
   });
 
-  test('zamčená úloha se neotevře', async ({ page }) => {
+  test('všechny úlohy jsou otevřené i bez postupu', async ({ page }) => {
+    await page.goto('/uloha/5-4');
+    await expect(page.getByRole('heading', { name: 'Sierpinského trojúhelník', level: 1 })).toBeVisible();
+    await page.goto('/mapa');
+    await expect(page.getByText(/Zamčeno/)).toHaveCount(0);
+  });
+
+  // Postupné odemykání je vypnuté (UNLOCK_ALL), test se vrátí s ním
+  test.skip('zamčená úloha se neotevře', async ({ page }) => {
     await page.goto('/uloha/2-1');
     await expect(page.getByRole('heading', { name: 'Úloha je zamčená' })).toBeVisible();
   });

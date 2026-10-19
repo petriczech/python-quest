@@ -31,6 +31,9 @@ const STORAGE_KEY = 'python-quest.progress.v1';
 /** Podíl hvězd předchozího světa pro odemknutí dalšího */
 export const UNLOCK_SHARE = 2 / 3;
 
+/** Všechny světy a úlohy otevřené pro všechny; `false` vrátí postupné odemykání */
+export const UNLOCK_ALL = true;
+
 export interface Attempt {
   stars: Stars;
   newStars: number;
@@ -75,8 +78,8 @@ function load(): SavedProgress {
 @Service()
 export class ProgressStore {
   private readonly state = signal<SavedProgress>(load());
-  /** Debug mód: vše odemčené */
-  private readonly debug = readDebugFlag();
+  /** Vše odemčené: pro všechny (`UNLOCK_ALL`), nebo debug mód */
+  private readonly debug = UNLOCK_ALL || readDebugFlag();
 
   readonly records = computed(() => this.state().records);
   readonly xp = computed(() => totalXp(this.records()));
