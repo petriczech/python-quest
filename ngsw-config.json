@@ -27,6 +27,14 @@
       }
     },
     {
+      "name": "python",
+      "installMode": "lazy",
+      "updateMode": "lazy",
+      "resources": {
+        "files": ["/pyodide/**"]
+      }
+    },
+    {
       "name": "fonts",
       "installMode": "lazy",
       "updateMode": "lazy",

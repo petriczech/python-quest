@@ -69,11 +69,11 @@
       <div class="card canvas-card">
         <div class="toolbar">
           <div class="controls">
-            <button type="button" class="btn btn-primary" (click)="runProgram()" [disabled]="running()">
+            <button type="button" class="btn btn-primary" (click)="runProgram()" [disabled]="running() || codeRunning()">
               <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l14 8-14 8z" fill="currentColor" /></svg>
               Spustit
             </button>
-            <button type="button" class="btn" (click)="stepOnce()">
+            <button type="button" class="btn" (click)="stepOnce()" [disabled]="codeRunning()">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4v16M9 4l10 8-10 8z" /></svg>
               Krok
             </button>
@@ -144,27 +144,76 @@
           <span>{{ result.text }}</span>
         </div>
       }
-      @if (output().truncated) {
+      @if (truncated()) {
         <div class="feedback" role="alert">Program je moc dlouhý, želva skončila po {{ output().steps.length }} krocích.</div>
       }
     </section>
 
-    <!-- BLOKY + PYTHON -->
+    <!-- BLOKY / KÓD -->
     <section class="column program-column" aria-label="Program">
-      <div class="card">
-        <app-program-editor
-          [(program)]="program"
-          [palette]="level.palette"
-          [activePath]="activePath()"
-          (changed)="onProgramChange()"
-        />
-        <div class="history">
-          <button type="button" class="btn" (click)="undo()" [disabled]="!canUndo()" aria-keyshortcuts="Control+Z">Zpět</button>
-          <button type="button" class="btn" (click)="redo()" [disabled]="!canRedo()" aria-keyshortcuts="Control+Y">Znovu</button>
-          <button type="button" class="btn" (click)="clear()" [disabled]="program().length === 0">Vymazat vše</button>
-        </div>
+      <div class="modes edit-modes" role="group" aria-label="Způsob programování">
+        <button type="button" [attr.aria-pressed]="editMode() === 'blocks'" (click)="setEditMode('blocks')">Bloky</button>
+        <button type="button" [attr.aria-pressed]="editMode() === 'code'" (click)="setEditMode('code')">
+          Kód v Pythonu <span class="badge-x2">XP ×2</span>
+        </button>
       </div>
-      <app-python-panel [program]="program()" [start]="start()" [activePath]="activePath()" />
+
+      @if (editMode() === 'blocks') {
+        <div class="card">
+          <app-program-editor
+            [(program)]="program"
+            [palette]="level.palette"
+            [activePath]="activePath()"
+            (changed)="onProgramChange()"
+          />
+          <div class="history">
+            <button type="button" class="btn" (click)="undo()" [disabled]="!canUndo()" aria-keyshortcuts="Control+Z">Zpět</button>
+            <button type="button" class="btn" (click)="redo()" [disabled]="!canRedo()" aria-keyshortcuts="Control+Y">Znovu</button>
+            <button type="button" class="btn" (click)="clear()" [disabled]="program().length === 0">Vymazat vše</button>
+          </div>
+        </div>
+        <app-python-panel [program]="program()" [start]="start()" [activePath]="activePath()" />
+      } @else {
+        <div class="card">
+          <h2 class="eyebrow">Můj kód</h2>
+          @defer (on immediate) {
+            <app-code-editor
+              [(code)]="code"
+              [errorLine]="codeResult()?.error?.line ?? null"
+              (changed)="onCodeChange($event)"
+            />
+          } @placeholder {
+            <p class="code-status">Načítá se editor…</p>
+          }
+          <div class="history">
+            <button type="button" class="btn" (click)="codeFromBlocks()">Převzít z bloků</button>
+            <span class="code-status" aria-live="polite">
+              @switch (python.state()) {
+                @case ('loading') {
+                  Načítá se Python, poprvé to chvíli trvá…
+                }
+                @case ('failed') {
+                  Python se nepodařilo načíst.
+                }
+                @default {
+                  @if (codeRunning()) {
+                    Program běží…
+                  }
+                }
+              }
+            </span>
+          </div>
+          @if (codeResult()?.error; as error) {
+            <div class="code-error" role="alert">
+              <b>{{ error.type }}{{ error.line ? ' na řádku ' + error.line : '' }}:</b> {{ error.message }}
+            </div>
+          }
+          @if (codeResult()?.output; as printed) {
+            <h3 class="eyebrow output-title">Výstup print</h3>
+            <pre class="code-output">{{ printed }}</pre>
+          }
+        </div>
+      }
     </section>
   </div>
 
@@ -189,7 +238,7 @@
         @for (reward of rewards(); track $index) {
           <li [class.missed]="!reward.ok">
             <span>{{ reward.text }}</span>
-            <span class="xp">{{ reward.ok ? '+' + reward.xp + ' XP' : '—' }}</span>
+            <span class="xp">{{ reward.ok ? reward.xp : '—' }}</span>
           </li>
         }
       </ul>

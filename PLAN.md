@@ -192,7 +192,11 @@ Postup je zevnitř ven: nejdřív čisté jádro (interpret, trace, skóre) s te
 
 ### Fáze 7 – po MVP
 
-- [ ] Pyodide worker + turtle shim, CodeMirror, psaní kódu (×2 XP)
+- [x] Pyodide worker + turtle shim, CodeMirror, psaní kódu (×2 XP). Odchylky:
+  - shim nekreslí, jen zapisuje příkazy želvy; `opsToProgram` z nich udělá program pro TS interpret, takže trace je shodný z konstrukce (test: Python z referencí všech úloh dá v Pyodide stejné segmenty);
+  - Pyodide z npm, kopíruje se do `pyodide/` vedle aplikace, service worker ho cachuje líně (offline po prvním použití);
+  - hvězdy v kódu: tvar a struktura (konstrukce v kódu, např. `for`, `begin_fill`), úspornost jen v blocích; záznam úlohy má `code: true` a XP úlohy se násobí 2;
+  - nekonečná smyčka: limit 5000 příkazů želvy v shimu, bez kreslení ukončí worker po 5 s.
 - [ ] třídní režim, úloha dne se žebříčkem (% → počet bloků → čas)
 
 ## Obsah: světy a úlohy pro MVP

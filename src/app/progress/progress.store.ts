@@ -9,6 +9,7 @@ import {
   Streak,
   bumpStreak,
   currentStreak,
+  evaluateCodeStars,
   evaluateStars,
   mergeRecord,
   playerLevel,
@@ -21,6 +22,8 @@ interface SavedProgress {
   records: Record<string, LevelRecord>;
   streak: Streak;
   drafts: Record<string, Command[]>;
+  /** Rozpracovaný psaný kód úloh */
+  codes: Record<string, string>;
 }
 
 const STORAGE_KEY = 'python-quest.progress.v1';
@@ -55,7 +58,12 @@ function readDebugFlag(): boolean {
 }
 
 function load(): SavedProgress {
-  const empty: SavedProgress = { records: {}, streak: { days: 0, lastDay: null, best: 0 }, drafts: {} };
+  const empty: SavedProgress = {
+    records: {},
+    streak: { days: 0, lastDay: null, best: 0 },
+    drafts: {},
+    codes: {},
+  };
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? { ...empty, ...(JSON.parse(raw) as Partial<SavedProgress>) } : empty;
@@ -133,14 +141,22 @@ export class ProgressStore {
     this.update((state) => ({ ...state, drafts: { ...state.drafts, [levelId]: program } }));
   }
 
-  /** Zapíše pokus a vrátí nově získané hvězdy a XP. */
-  submit(level: Level, program: readonly Command[], percent: number, hintsUsed: number): Attempt {
-    const stars = evaluateStars(level, program, percent);
+  codeDraft(levelId: string): string | undefined {
+    return this.state().codes[levelId];
+  }
+
+  saveCodeDraft(levelId: string, code: string): void {
+    this.update((state) => ({ ...state, codes: { ...state.codes, [levelId]: code } }));
+  }
+
+  /** Zapíše pokus a vrátí nově získané hvězdy a XP. Pokus v psaném kódu nese `code`. */
+  submit(level: Level, program: readonly Command[], percent: number, hintsUsed: number, code?: string): Attempt {
+    const stars = code === undefined ? evaluateStars(level, program, percent) : evaluateCodeStars(level, code, percent);
     const previous = this.records()[level.id];
     const xpBefore = this.xp();
     const badgesBefore = this.badges();
     const before = previous ? starCount(previous.stars) : 0;
-    const record = mergeRecord(previous, { stars, percent, hintsUsed });
+    const record = mergeRecord(previous, { stars, percent, hintsUsed, code: code !== undefined });
     this.update((state) => ({
       ...state,
       records: { ...state.records, [level.id]: record },
@@ -157,7 +173,7 @@ export class ProgressStore {
   }
 
   reset(): void {
-    this.update(() => ({ records: {}, streak: { days: 0, lastDay: null, best: 0 }, drafts: {} }));
+    this.update(() => ({ records: {}, streak: { days: 0, lastDay: null, best: 0 }, drafts: {}, codes: {} }));
   }
 
   private update(fn: (state: SavedProgress) => SavedProgress): void {

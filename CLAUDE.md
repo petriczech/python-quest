@@ -34,6 +34,11 @@ npm run e2e:sync
 - Porty: dev server 4300, E2E server 4318, auth 9101, firestore 8091, hub 4408, logging 4508, UI vypnuté.
 - Data: `users/{uid}/levels/{levelId}` (záznam úlohy) a `users/{uid}/meta/streak`; rozpracované programy zůstávají jen v zařízení.
 
+## Psaní kódu (Python)
+
+- Pyodide běží ve Web Workeru (`src/app/code/`), soubory se kopírují z `node_modules/pyodide` do `pyodide/` (assets v `angular.json`). Po změně `angular.json` se musí restartovat dev server.
+- Modul `turtle` je shim v `src/app/core/turtle-shim.ts`: jen zapisuje příkazy, `opsToProgram` z nich dělá program pro TS interpret. Testy shody s bloky běží ve Vitestu přímo v Pyodide.
+
 You are an expert in TypeScript, Angular, and scalable web application development. You write functional, maintainable, performant, and accessible code following Angular and TypeScript best practices.
 
 ## TypeScript Best Practices

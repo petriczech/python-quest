@@ -14,6 +14,7 @@ export function mergeLevelRecords(a: LevelRecord, b: LevelRecord): LevelRecord {
     perfect: a.perfect || b.perfect,
     hintsUsed: Math.max(a.hintsUsed, b.hintsUsed),
     firstTry: a.firstTry && b.firstTry,
+    code: (a.code ?? false) || (b.code ?? false),
   };
 }
 
@@ -52,6 +53,7 @@ function sameRecord(a: LevelRecord, b: LevelRecord): boolean {
     a.perfect === b.perfect &&
     a.hintsUsed === b.hintsUsed &&
     a.firstTry === b.firstTry &&
+    (a.code ?? false) === (b.code ?? false) &&
     a.stars.every((star, i) => star === b.stars[i])
   );
 }

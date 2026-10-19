@@ -421,3 +421,51 @@ h1 {
   font-size: 13px;
   color: var(--text-2);
 }
+
+/* BLOKY / KÓD */
+
+.edit-modes {
+  align-self: flex-start;
+}
+
+.badge-x2 {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.code-status {
+  align-self: center;
+  font-size: 14px;
+  color: var(--text-3);
+}
+
+.code-error {
+  margin-top: 12px;
+  background: #fff4ec;
+  border: 1px solid var(--turn-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 15px;
+  color: #5a2a0e;
+}
+
+.code-output {
+  margin: 6px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: #ffffff;
+  font: 14px var(--font-code);
+  white-space: pre-wrap;
+  max-height: 200px;
+  overflow: auto;
+}
+
+.output-title {
+  margin-top: 14px;
+}

@@ -24,7 +24,7 @@ service cloud.firestore {
     match /users/{uid}/levels/{levelId} {
       allow create, update: if isOwner(uid)
         && levelId.matches('^[0-9]{1,2}-[0-9]{1,2}$')
-        && request.resource.data.keys().hasOnly(['stars', 'bestMatch', 'perfect', 'hintsUsed', 'firstTry'])
+        && request.resource.data.keys().hasOnly(['stars', 'bestMatch', 'perfect', 'hintsUsed', 'firstTry', 'code'])
         && request.resource.data.keys().hasAll(['stars', 'bestMatch', 'perfect', 'hintsUsed', 'firstTry'])
         && isStars(request.resource.data.stars)
         && request.resource.data.bestMatch is number
@@ -32,7 +32,8 @@ service cloud.firestore {
         && request.resource.data.bestMatch <= 100
         && request.resource.data.perfect is bool
         && isCount(request.resource.data.hintsUsed, 10)
-        && request.resource.data.firstTry is bool;
+        && request.resource.data.firstTry is bool
+        && (!('code' in request.resource.data) || request.resource.data.code is bool);
       allow delete: if false;
     }
 

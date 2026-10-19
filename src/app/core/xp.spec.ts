@@ -1,8 +1,10 @@
 import { findLevel } from '../levels/levels';
 import { Level } from './level';
 import {
+  Stars,
   bumpStreak,
   currentStreak,
+  evaluateCodeStars,
   evaluateStars,
   levelXp,
   mergeRecord,
@@ -62,7 +64,43 @@ describe('XP', () => {
       perfect: true,
       hintsUsed: 1,
       firstTry: false,
+      code: false,
     });
+  });
+
+  it('splnění v kódu se zapamatuje a nesplněný pokus v kódu ne', () => {
+    const solved = mergeRecord(undefined, { stars: [true, false, false], percent: 99, hintsUsed: 0, code: true });
+    expect(solved.code).toBe(true);
+    expect(mergeRecord(solved, { stars: [true, true, true], percent: 100, hintsUsed: 0 }).code).toBe(true);
+    expect(mergeRecord(undefined, { stars: [false, false, false], percent: 50, hintsUsed: 0, code: true }).code).toBe(
+      false,
+    );
+  });
+
+  it('úloha splněná v kódu dá dvojnásobek XP, nápověda se odečte jednou', () => {
+    const record = { stars: [true, true, false] as Stars, bestMatch: 98, perfect: false, hintsUsed: 1, firstTry: true };
+    expect(levelXp(record)).toBe(30);
+    expect(levelXp({ ...record, code: true })).toBe(70);
+  });
+});
+
+describe('evaluateCodeStars', () => {
+  const level = findLevel('2-8');
+
+  it('struktura podle konstrukcí v kódu, úspornost jen v blocích', () => {
+    if (!level) {
+      throw new Error('Chybí úloha 2-8');
+    }
+    const code = ['begin_fill()', 'for i in range(3):', '    forward(120)', '    left(120)', 'end_fill()'].join('\n');
+    expect(evaluateCodeStars(level, code, 99)).toEqual([true, true, false]);
+    expect(evaluateCodeStars(level, 'forward(120)\nleft(120)', 99)).toEqual([true, false, false]);
+    // Komentář ani text se jako konstrukce nepočítají
+    expect(evaluateCodeStars(level, '# for begin_fill()\nprint("for i in range(3): begin_fill()")', 99)).toEqual([
+      true,
+      false,
+      false,
+    ]);
+    expect(evaluateCodeStars(level, code, 50)).toEqual([false, false, false]);
   });
 });
 

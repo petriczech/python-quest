@@ -1,5 +1,5 @@
 import { Level } from './level';
-import { Command, countBlocks, usedKinds } from './program';
+import { Command, CommandKind, countBlocks, usedKinds } from './program';
 import { PASS_PERCENT } from './score';
 
 export type Stars = [boolean, boolean, boolean];
@@ -13,11 +13,26 @@ export interface LevelRecord {
   hintsUsed: number;
   /** Splněno hned prvním spuštěním */
   firstTry: boolean;
+  /** Splněno i v psaném kódu (×2 XP); starší záznamy pole nemají */
+  code?: boolean;
 }
 
 export const XP_PER_STAR = 20;
 export const XP_PERFECT = 10;
 export const XP_PER_HINT = 10;
+/** Násobek XP za úlohu splněnou v psaném kódu */
+export const CODE_XP_FACTOR = 2;
+
+/** Konstrukce v Pythonu, které odpovídají povinným blokům úlohy */
+const CODE_PATTERNS: Partial<Record<CommandKind, RegExp>> = {
+  repeat: /\b(for|while)\b/,
+  for: /\bfor\b[^:]*\brange\(/,
+  fill: /\bbegin_fill\(/,
+  penUp: /\b(penup|pu|up|teleport)\(/,
+  penDown: /\b(pendown|pd|down)\(/,
+  color: /\b(color|pencolor)\(/,
+  goto: /\b(goto|setpos|setposition|teleport)\(/,
+};
 
 export function evaluateStars(level: Level, program: readonly Command[], percent: number): Stars {
   const solved = percent >= PASS_PERCENT;
@@ -27,13 +42,27 @@ export function evaluateStars(level: Level, program: readonly Command[], percent
   return [solved, solved && structure, solved && economy];
 }
 
+/** Hvězdy za psaný kód: tvar a struktura; úspornost se hodnotí jen v blocích. */
+export function evaluateCodeStars(level: Level, code: string, percent: number): Stars {
+  const solved = percent >= PASS_PERCENT;
+  const source = withoutCommentsAndStrings(code);
+  const structure = (level.stars.requires ?? []).every((kind) => CODE_PATTERNS[kind]?.test(source) ?? true);
+  return [solved, solved && structure, false];
+}
+
+/** Kód bez komentářů a textových řetězců, aby `# for` nebo `"for"` nesplnily strukturu */
+function withoutCommentsAndStrings(code: string): string {
+  return code.replace(/("""|''')[\s\S]*?\1|"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|#[^\n]*/g, '');
+}
+
 export function starCount(stars: Stars): number {
   return stars.filter(Boolean).length;
 }
 
 export function levelXp(record: LevelRecord): number {
   const earned = starCount(record.stars) * XP_PER_STAR + (record.perfect ? XP_PERFECT : 0);
-  return Math.max(0, earned - record.hintsUsed * XP_PER_HINT);
+  const factor = record.code ? CODE_XP_FACTOR : 1;
+  return Math.max(0, earned * factor - record.hintsUsed * XP_PER_HINT);
 }
 
 export function totalXp(records: Record<string, LevelRecord>): number {
@@ -43,7 +72,7 @@ export function totalXp(records: Record<string, LevelRecord>): number {
 /** Sloučí nový pokus do záznamu; hvězdy ani shoda se nikdy nezhorší. */
 export function mergeRecord(
   previous: LevelRecord | undefined,
-  attempt: { stars: Stars; percent: number; hintsUsed: number },
+  attempt: { stars: Stars; percent: number; hintsUsed: number; code?: boolean },
 ): LevelRecord {
   const stars = attempt.stars.map((star, i) => star || (previous?.stars[i] ?? false)) as Stars;
   return {
@@ -52,6 +81,7 @@ export function mergeRecord(
     perfect: (previous?.perfect ?? false) || attempt.percent >= 100,
     hintsUsed: Math.max(previous?.hintsUsed ?? 0, attempt.hintsUsed),
     firstTry: previous ? previous.firstTry : attempt.stars[0],
+    code: (previous?.code ?? false) || ((attempt.code ?? false) && attempt.stars[0]),
   };
 }
 

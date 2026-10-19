@@ -25,7 +25,7 @@ describe('mergeSnapshots', () => {
       },
     );
     expect(merged.records).toEqual({
-      '1-1': record({ stars: [true, true, false], bestMatch: 100, perfect: true, firstTry: false }),
+      '1-1': record({ stars: [true, true, false], bestMatch: 100, perfect: true, firstTry: false, code: false }),
       '1-2': record(),
       '1-3': record({ hintsUsed: 2 }),
     });

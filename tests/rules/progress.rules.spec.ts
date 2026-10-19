@@ -42,6 +42,10 @@ describe('firestore.rules – postup studenta', () => {
       await assertSucceeds(getDoc(doc(db(OWNER), 'users', OWNER, 'levels', '2-12')));
     });
 
+    it('záznam s příznakem splnění v kódu projde', async () => {
+      await assertSucceeds(setDoc(doc(db(OWNER), 'users', OWNER, 'levels', '4-1'), { ...LEVEL, code: true }));
+    });
+
     it('cizí ani nepřihlášený nečte ani nezapisuje', async () => {
       await env.withSecurityRulesDisabled((ctx) =>
         setDoc(doc(ctx.firestore(), 'users', OWNER, 'levels', '1-1'), LEVEL),
@@ -70,6 +74,7 @@ describe('firestore.rules – postup studenta', () => {
       ['hvězda jako číslo', { ...LEVEL, stars: [1, 0, 0] }],
       ['desetinná nápověda', { ...LEVEL, hintsUsed: 1.5 }],
       ['příliš nápověd', { ...LEVEL, hintsUsed: 11 }],
+      ['kód jako text', { ...LEVEL, code: 'ano' }],
     ])('odmítne tvar: %s', async (_name, data) => {
       await assertFails(setDoc(doc(db(OWNER), 'users', OWNER, 'levels', '1-1'), data));
     });
