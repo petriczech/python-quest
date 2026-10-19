@@ -65,13 +65,6 @@ nav a.active {
   background: #22395a;
 }
 
-.streak {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 15px;
-}
-
 .level {
   display: flex;
   align-items: center;

@@ -1,5 +1,5 @@
 import { Level } from './level';
-import { LevelRecord, Streak } from './xp';
+import { LevelRecord } from './xp';
 
 export type BadgeId =
   | 'first-step'
@@ -7,8 +7,8 @@ export type BadgeId =
   | 'angle-master'
   | 'hundred'
   | 'no-hints'
-  | 'streak-7'
-  | 'streak-30';
+  | 'pythonista'
+  | 'fractals';
 
 export interface Badge {
   id: BadgeId;
@@ -22,17 +22,16 @@ export const BADGES: Badge[] = [
   { id: 'angle-master', title: 'Úhlomistr', description: '5 úloh s vnějším úhlem napoprvé' },
   { id: 'hundred', title: 'Stovkař', description: '10× shoda 100 %' },
   { id: 'no-hints', title: 'Bez nápovědy', description: 'Celý svět bez nápovědy' },
-  { id: 'streak-7', title: 'Série 7', description: '7 dní v řadě' },
-  { id: 'streak-30', title: 'Série 30', description: '30 dní v řadě' },
+  { id: 'pythonista', title: 'Pythonista', description: '5 úloh splněných v psaném kódu' },
+  { id: 'fractals', title: 'Fraktálník', description: 'Všechny fraktály nakreslené rekurzí' },
 ];
 
 /** Úlohy, kde se počítá vnější úhel mnohoúhelníku */
 const ANGLE_LEVELS = ['2-2', '2-3', '2-4', '2-5', '2-6', '2-7'];
 
-/** Získané odznaky odvozené ze záznamů úloh a série. */
+/** Získané odznaky odvozené ze záznamů úloh. */
 export function earnedBadges(
   records: Record<string, LevelRecord>,
-  streak: Pick<Streak, 'best'>,
   levels: readonly Level[],
 ): Set<BadgeId> {
   const solved = (id: string) => records[id]?.stars[0] ?? false;
@@ -60,11 +59,12 @@ export function earnedBadges(
       earned.add('no-hints');
     }
   }
-  if (streak.best >= 7) {
-    earned.add('streak-7');
+  if (Object.values(records).filter((record) => record.code).length >= 5) {
+    earned.add('pythonista');
   }
-  if (streak.best >= 30) {
-    earned.add('streak-30');
+  const fractals = levels.filter((level) => level.stars.recursion);
+  if (fractals.length > 0 && fractals.every((level) => records[level.id]?.stars[1])) {
+    earned.add('fractals');
   }
   return earned;
 }

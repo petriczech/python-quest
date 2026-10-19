@@ -271,7 +271,7 @@ XP se neukládá jako číslo. Pro každou úlohu se ukládá záznam `{ stars, 
 | Nápověda | slovní tip → kostra programu | −10 XP za každý stupeň, XP za úlohu nejde pod 0 |
 | Opakování úlohy | XP jen za nově získané hvězdy | bez farmení |
 | Úroveň | 0, 200, 450, 750, … (každý další krok o 50 větší) | hlavička |
-| Série | aspoň 1 splněná úloha denně | odznak za 7 a 30 dní |
+| Série | aspoň 1 splněná úloha denně | v UI se neukazuje (data se dál ukládají) |
 | Odemknutí světa | 2/3 hvězd předchozího světa | další svět |
 | Psaní kódu (po MVP) | stejná úloha v Pythonu | ×2 XP |
 
@@ -282,7 +282,8 @@ XP se neukládá jako číslo. Pro každou úlohu se ukládá záznam `{ stars, 
 - **Úhlomistr:** 5 úloh s vnějším úhlem napoprvé
 - **Stovkař:** 10× 100 %
 - **Bez nápovědy:** celý svět bez nápovědy
-- **Série 7:** 7 dní v řadě
+- **Pythonista:** 5 úloh splněných v psaném kódu
+- **Fraktálník:** všechny fraktály nakreslené rekurzí
 
 ## Testování a nasazení
 

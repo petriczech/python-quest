@@ -85,7 +85,7 @@ export class ProgressStore {
   readonly xp = computed(() => totalXp(this.records()));
   readonly playerLevel = computed(() => playerLevel(this.xp()));
   readonly streak = computed(() => currentStreak(this.state().streak, today()));
-  readonly badges = computed(() => earnedBadges(this.records(), this.state().streak, LEVELS));
+  readonly badges = computed(() => earnedBadges(this.records(), LEVELS));
   readonly totalStars = computed(() =>
     Object.values(this.records()).reduce((sum, record) => sum + starCount(record.stars), 0),
   );

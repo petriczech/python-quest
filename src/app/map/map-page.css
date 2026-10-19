@@ -61,15 +61,6 @@ h1 {
   font-weight: 400;
 }
 
-.stats .streak {
-  background: var(--accent-soft);
-}
-
-.stats .streak dt,
-.stats .streak dd {
-  color: var(--accent-text);
-}
-
 .world {
   background: var(--surface);
   border: 1px solid var(--border);

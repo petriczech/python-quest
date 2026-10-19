@@ -18,12 +18,4 @@ export class App {
     const { from, to } = this.progress.playerLevel();
     return Math.round(((this.progress.xp() - from) / (to - from)) * 100);
   });
-
-  protected readonly streakDays = computed(() => {
-    const days = this.progress.streak();
-    if (days === 1) {
-      return 'den';
-    }
-    return days >= 2 && days <= 4 ? 'dny' : 'dní';
-  });
 }
