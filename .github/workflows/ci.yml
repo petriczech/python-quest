@@ -40,3 +40,44 @@ jobs:
           name: playwright-report
           path: test-results/
           retention-days: 7
+
+  # GitHub Pages: jen push do main a jen po zelené kontrole
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # Pages běží na podcestě /<repo>/
+      - name: Build pro GitHub Pages
+        run: npx ng build --base-href "/${{ github.event.repository.name }}/"
+
+      # Přímý odkaz (/uloha/1-1) Pages nezná, vrátí 404.html, a ta načte aplikaci
+      - name: Přímé odkazy
+        run: cp dist/python-quest/browser/index.html dist/python-quest/browser/404.html
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/python-quest/browser
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

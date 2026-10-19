@@ -152,7 +152,7 @@ Postup je zevnitř ven: nejdřív čisté jádro (interpret, trace, skóre) s te
 - [ ] `git init` a repo na GitHubu (preview kanály Firebase Hosting jedou přes GitHub Actions). Lokální git je, repo na GitHubu zatím ne.
 - [x] Angular workspace: standalone, zoneless, strict TS, ESLint, routy `/mapa`, `/uloha/:id`
 - [x] design tokeny (viz tabulka výše), fonty, mřížka papíru
-- [ ] Vitest a Playwright v CI, deploy na Firebase Hosting z `main`. Workflow `.github/workflows/ci.yml` je hotový (lint, unit, build, E2E bez screenshotů, protože baseline jsou z Windows). Deploy čeká na skutečný Firebase projekt.
+- [ ] Vitest a Playwright v CI, deploy na Firebase Hosting z `main`. Workflow `.github/workflows/ci.yml` je hotový (lint, unit, build, E2E bez screenshotů, protože baseline jsou z Windows). Do skutečného Firebase projektu se nasazuje na GitHub Pages: job `deploy` po zelené kontrole na `main`, build s `--base-href /<repo>/`, `404.html` pro přímé odkazy, postup jen v `localStorage`.
 
 ### Fáze 1 – jádro: interpret a trace
 
