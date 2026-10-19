@@ -65,6 +65,18 @@
             {{ label(command) }}
           </button>
 
+          @if (command.kind === 'setVar' || command.kind === 'changeVar') {
+            <select
+              class="var-select"
+              [attr.aria-label]="'Proměnná: ' + label(command)"
+              (change)="setVarName(path, command, valueOf($event))"
+            >
+              @for (name of varNames; track name) {
+                <option [value]="name" [selected]="name === command.name">{{ name }}</option>
+              }
+            </select>
+          }
+
           @let variable = loopVarOf(path);
           @let number = numberOf(command, variable);
           @if (variable && (command.kind === 'forward' || command.kind === 'backward')) {
@@ -78,7 +90,24 @@
               = {{ variable }}
             </button>
           }
+          @let named = namedVarOf(command);
+          @if (named) {
+            <button
+              type="button"
+              class="var-toggle"
+              [attr.aria-pressed]="usesNamedVar(command)"
+              [attr.aria-label]="'= ' + named + ': hodnota z proměnné, ' + label(command)"
+              (click)="toggleNamedVar(path, command)"
+            >
+              = {{ named }}
+            </button>
+          }
           @if (number) {
+            @if (command.kind === 'setVar') {
+              <span class="word">na</span>
+            } @else if (command.kind === 'changeVar') {
+              <span class="word">o</span>
+            }
             <span class="stepper">
               <button
                 type="button"

@@ -20,6 +20,8 @@ export const BLOCK_LABELS: Record<CommandKind, string> = {
   fill: 'výplň',
   repeat: 'opakuj',
   for: 'cyklus for',
+  setVar: 'nastav',
+  changeVar: 'změň',
 };
 
 export function createBlock(kind: CommandKind): Command {
@@ -44,6 +46,10 @@ export function createBlock(kind: CommandKind): Command {
       return { kind, times: 4, body: [] };
     case 'for':
       return { kind, from: 10, to: 200, step: 10, body: [] };
+    case 'setVar':
+      return { kind, name: 'delka', value: 100 };
+    case 'changeVar':
+      return { kind, name: 'delka', by: 10 };
   }
 }
 

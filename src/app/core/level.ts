@@ -1,4 +1,4 @@
-import { Command, CommandKind, TurtleState } from './program';
+import { Command, CommandKind, TurtleState, VarName } from './program';
 import { run } from './run';
 
 export interface Level {
@@ -18,6 +18,8 @@ export interface Level {
   stars: {
     requires?: CommandKind[];
     maxBlocks?: number;
+    /** Proměnné, které se musí opravdu použít (v blocích přepínač „= delka“, v kódu `forward(delka)`) */
+    usesVars?: VarName[];
     /** Psaný kód: funkce, která volá sama sebe */
     recursion?: boolean;
     /** Psaný kód: nejvýš tolik řádků (bez prázdných a komentářů) */

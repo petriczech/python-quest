@@ -83,6 +83,54 @@ describe('toPython', () => {
     );
   });
 
+  it('proměnné: nastav, změň a použití; nenastavená dostane 0 na začátku', () => {
+    const text = pythonText(
+      toPython([
+        { kind: 'setVar', name: 'delka', value: 10 },
+        {
+          kind: 'repeat',
+          times: 4,
+          useVar: true,
+          body: [
+            { kind: 'forward', value: 1, useVar: true },
+            { kind: 'right', angle: 1, useVar: true },
+            { kind: 'changeVar', name: 'delka', by: 5 },
+            { kind: 'changeVar', name: 'uhel', by: -2 },
+          ],
+        },
+      ]),
+    );
+    expect(text).toBe(
+      [
+        'from turtle import *',
+        '',
+        'uhel = 0',
+        'pocet = 0',
+        '',
+        'delka = 10',
+        'for i in range(pocet):',
+        '    forward(delka)',
+        '    right(uhel)',
+        '    delka = delka + 5',
+        '    uhel = uhel - 2',
+        '',
+      ].join('\n'),
+    );
+  });
+
+  it('nastavení na nejvyšší úrovni před použitím inicializaci nepotřebuje', () => {
+    const text = pythonText(
+      toPython([
+        { kind: 'setVar', name: 'pocet', value: 5 },
+        { kind: 'repeat', times: 1, useVar: true, body: [{ kind: 'setVar', name: 'uhel', value: 72 }] },
+        { kind: 'left', angle: 1, useVar: true },
+      ]),
+    );
+    expect(text).not.toContain('pocet = 0');
+    // Nastavení uhel uvnitř opakuj se nemusí provést
+    expect(text).toContain('uhel = 0');
+  });
+
   it('nastaví start, když není v počátku', () => {
     const text = pythonText(toPython([], { x: -75, y: -60, heading: 90 }));
     expect(text).toBe(

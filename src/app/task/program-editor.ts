@@ -12,10 +12,10 @@ import {
   replaceBlock,
   shiftBlock,
 } from '../core/edit';
-import { Command, CommandKind, countBlocks, hasBody } from '../core/program';
+import { Command, CommandKind, VAR_NAMES, VAR_OF, VarName, countBlocks, hasBody } from '../core/program';
 import { loopVar } from '../core/python';
 
-type BlockGroup = 'move' | 'turn' | 'repeat' | 'pen';
+type BlockGroup = 'move' | 'turn' | 'repeat' | 'pen' | 'var';
 
 const GROUPS: Record<CommandKind, BlockGroup> = {
   forward: 'move',
@@ -29,6 +29,8 @@ const GROUPS: Record<CommandKind, BlockGroup> = {
   penUp: 'pen',
   penDown: 'pen',
   color: 'pen',
+  setVar: 'var',
+  changeVar: 'var',
 };
 
 const PALETTE = 'palette';
@@ -38,7 +40,14 @@ const LIMITS = {
   angle: { min: 0, max: 360, step: 15 },
   times: { min: 1, max: 100, step: 1 },
   rangeStep: { min: 1, max: 100, step: 1 },
+  change: { min: -100, max: 100, step: 5 },
+  changeCount: { min: -20, max: 20, step: 1 },
 } as const;
+
+const INTEGER_LIMITS = new Set<Limit>(['times', 'rangeStep', 'changeCount']);
+
+/** Rozsah hodnoty proměnné podle toho, k čemu slouží */
+const VAR_LIMIT: Record<VarName, Limit> = { delka: 'distance', uhel: 'angle', pocet: 'times' };
 
 type Limit = keyof typeof LIMITS;
 
@@ -64,6 +73,9 @@ export class ProgramEditor {
   protected readonly labels = BLOCK_LABELS;
   protected readonly colors = PEN_COLORS;
   protected readonly limits = LIMITS;
+  protected readonly varNames = VAR_NAMES;
+  /** Úloha má proměnné v paletě: bloky ukážou přepínač na proměnnou */
+  protected readonly varsEnabled = computed(() => this.palette().includes('setVar'));
   protected readonly selected = signal<number[] | null>(null);
   /** Blok tažený z palety mimo ni: jeho místo drží zástupce, aby se rozložení pod paletou neposunulo */
   protected readonly outOfPalette = signal<CommandKind | null>(null);
@@ -183,7 +195,8 @@ export class ProgramEditor {
   }
 
   protected setNumber(path: number[], command: Command, value: number, limit: Limit): void {
-    const v = clamp(value, limit);
+    // Počty jsou pro Python range celá čísla
+    const v = clamp(INTEGER_LIMITS.has(limit) ? Math.round(value) : value, limit);
     switch (command.kind) {
       case 'forward':
       case 'backward':
@@ -195,6 +208,51 @@ export class ProgramEditor {
         break;
       case 'repeat':
         this.set(replaceBlock(this.program(), path, { ...command, times: v }));
+        break;
+      case 'setVar':
+        this.set(replaceBlock(this.program(), path, { ...command, value: v }));
+        break;
+      case 'changeVar':
+        this.set(replaceBlock(this.program(), path, { ...command, by: v }));
+        break;
+    }
+  }
+
+  protected setVarName(path: number[], command: Command, value: string): void {
+    const name = VAR_NAMES.find((n) => n === value);
+    if (!name) {
+      return;
+    }
+    if (command.kind === 'setVar') {
+      const limit = VAR_LIMIT[name];
+      const value = clamp(INTEGER_LIMITS.has(limit) ? Math.round(command.value) : command.value, limit);
+      this.set(replaceBlock(this.program(), path, { ...command, name, value }));
+    } else if (command.kind === 'changeVar') {
+      const limit = name === 'pocet' ? 'changeCount' : 'change';
+      this.set(replaceBlock(this.program(), path, { ...command, name, by: clamp(Math.round(command.by), limit) }));
+    }
+  }
+
+  /** Proměnná, kterou blok může použít; jen v úlohách s proměnnými v paletě */
+  protected namedVarOf(command: Command): VarName | null {
+    return this.varsEnabled() ? (VAR_OF[command.kind] ?? null) : null;
+  }
+
+  protected usesNamedVar(command: Command): boolean {
+    return 'useVar' in command && !!command.useVar;
+  }
+
+  protected toggleNamedVar(path: number[], command: Command): void {
+    switch (command.kind) {
+      case 'forward':
+      case 'backward':
+        // Délka je buď z cyklu for, nebo z proměnné delka
+        this.set(replaceBlock(this.program(), path, { ...command, useVar: !command.useVar, byVar: false }));
+        break;
+      case 'left':
+      case 'right':
+      case 'repeat':
+        this.set(replaceBlock(this.program(), path, { ...command, useVar: !command.useVar }));
         break;
     }
   }
@@ -240,7 +298,7 @@ export class ProgramEditor {
 
   protected toggleVar(path: number[], command: Command): void {
     if (command.kind === 'forward' || command.kind === 'backward') {
-      this.set(replaceBlock(this.program(), path, { ...command, byVar: !command.byVar }));
+      this.set(replaceBlock(this.program(), path, { ...command, byVar: !command.byVar, useVar: false }));
     }
   }
 
@@ -252,12 +310,18 @@ export class ProgramEditor {
     switch (command.kind) {
       case 'forward':
       case 'backward':
-        return command.byVar && variable ? null : { value: command.value, limit: 'distance', unit: '' };
+        return (command.byVar && variable) || command.useVar
+          ? null
+          : { value: command.value, limit: 'distance', unit: '' };
       case 'left':
       case 'right':
-        return { value: command.angle, limit: 'angle', unit: '°' };
+        return command.useVar ? null : { value: command.angle, limit: 'angle', unit: '°' };
       case 'repeat':
-        return { value: command.times, limit: 'times', unit: '×' };
+        return command.useVar ? null : { value: command.times, limit: 'times', unit: '×' };
+      case 'setVar':
+        return { value: command.value, limit: VAR_LIMIT[command.name], unit: '' };
+      case 'changeVar':
+        return { value: command.by, limit: command.name === 'pocet' ? 'changeCount' : 'change', unit: '' };
       default:
         return null;
     }

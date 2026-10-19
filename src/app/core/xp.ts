@@ -1,5 +1,5 @@
 import { Level } from './level';
-import { Command, CommandKind, countBlocks, usedKinds } from './program';
+import { Command, CommandKind, countBlocks, usedKinds, usedVars } from './program';
 import { PASS_PERCENT } from './score';
 
 export type Stars = [boolean, boolean, boolean];
@@ -32,12 +32,17 @@ const CODE_PATTERNS: Partial<Record<CommandKind, RegExp>> = {
   penDown: /\b(pendown|pd|down)\(/,
   color: /\b(color|pencolor)\(/,
   goto: /\b(goto|setpos|setposition|teleport)\(/,
+  setVar: /^\s*(delka|uhel|pocet)\s*=(?!=)/m,
+  changeVar: /^\s*(delka|uhel|pocet)\s*([-+]=|=\s*\1\s*[-+])/m,
 };
 
 export function evaluateStars(level: Level, program: readonly Command[], percent: number): Stars {
   const solved = percent >= PASS_PERCENT;
   const kinds = usedKinds(program);
-  const structure = (level.stars.requires ?? []).every((kind) => kinds.has(kind));
+  const vars = usedVars(program);
+  const structure =
+    (level.stars.requires ?? []).every((kind) => kinds.has(kind)) &&
+    (level.stars.usesVars ?? []).every((name) => vars.has(name));
   const economy = level.stars.maxBlocks === undefined || countBlocks(program) <= level.stars.maxBlocks;
   return [solved, solved && structure, solved && economy];
 }
@@ -51,7 +56,9 @@ export function evaluateCodeStars(level: Level, code: string, percent: number): 
   const source = withoutCommentsAndStrings(code);
   const structure =
     (level.stars.requires ?? []).every((kind) => CODE_PATTERNS[kind]?.test(source) ?? true) &&
-    (!level.stars.recursion || hasRecursion(source));
+    (!level.stars.recursion || hasRecursion(source)) &&
+    // Proměnná jako argument volání: forward(delka), left(uhel), range(pocet)
+    (level.stars.usesVars ?? []).every((name) => new RegExp(`\\(\\s*${name}\\s*\\)`).test(source));
   const economy = level.stars.maxLines !== undefined && codeLines(source) <= level.stars.maxLines;
   return [solved, solved && structure, solved && economy];
 }

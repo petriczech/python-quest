@@ -13,7 +13,7 @@
     <span aria-current="page">Úloha {{ level.index }} z {{ worldSize() }}</span>
   </nav>
 
-  <div class="layout">
+  <div class="layout" [class.code-wide]="editMode() === 'code' && wideCode()">
     <!-- ZADÁNÍ -->
     <section class="column task" aria-labelledby="zadani">
       <div class="card">
@@ -191,6 +191,9 @@
             @if (!codeOnly()) {
               <button type="button" class="btn" (click)="codeFromBlocks()">Převzít z bloků</button>
             }
+            <button type="button" class="btn" [attr.aria-pressed]="wideCode()" (click)="wideCode.update((wide) => !wide)">
+              {{ wideCode() ? 'Zmenšit editor' : 'Zvětšit editor' }}
+            </button>
             <span class="code-status" aria-live="polite">
               @switch (python.state()) {
                 @case ('loading') {

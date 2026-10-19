@@ -35,6 +35,9 @@
   --pen-bg: #e9f6f3;
   --pen-border: #bfe0da;
   --pen-text: #0b5c51;
+  --var-bg: #fdf6dc;
+  --var-border: #ead58c;
+  --var-text: #654a00;
 
   /* Typografie */
   --font-ui: 'Bricolage Grotesque', system-ui, sans-serif;

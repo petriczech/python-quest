@@ -1,5 +1,5 @@
 import { Level, World } from '../core/level';
-import { Command } from '../core/program';
+import { Command, VarName } from '../core/program';
 
 const fwd = (value: number): Command => ({ kind: 'forward', value });
 const back = (value: number): Command => ({ kind: 'backward', value });
@@ -12,6 +12,12 @@ const fill = (color: string, body: Command[]): Command => ({ kind: 'fill', color
 const loop = (from: number, to: number, step: number, body: Command[]): Command => ({ kind: 'for', from, to, step, body });
 /** Délka z proměnné cyklu `for` */
 const fwdVar: Command = { kind: 'forward', value: 10, byVar: true };
+// Pojmenované proměnné
+const setVar = (name: VarName, value: number): Command => ({ kind: 'setVar', name, value });
+const changeVar = (name: VarName, by: number): Command => ({ kind: 'changeVar', name, by });
+const fwdD: Command = { kind: 'forward', value: 100, useVar: true };
+const leftU: Command = { kind: 'left', angle: 90, useVar: true };
+const repeatP = (body: Command[]): Command => ({ kind: 'repeat', times: 4, body, useVar: true });
 const color = (value: string): Command => ({ kind: 'color', value });
 /** Hvězda: n čar a po každé otočka vpravo o k · 360 / n */
 const star = (n: number, k: number, side: number): Command => repeat(n, [fwd(side), right((k * 360) / n)]);
@@ -49,7 +55,7 @@ const square = (side: number): Command[] =>
 export const WORLDS: World[] = [
   { id: 1, title: 'Základy pohybu', description: 'Délky, pravé úhly, schody, písmena L, T, E.' },
   { id: 2, title: 'Mnohoúhelníky', description: 'Vnější úhel 360/n, hvězdy, opakuj.' },
-  { id: 3, title: 'Spirály', description: 'Cyklus s proměnnou: každý krok je delší než ten předchozí.' },
+  { id: 3, title: 'Spirály a proměnné', description: 'Cyklus for a proměnné delka, uhel, pocet: každý krok jinak.' },
   { id: 4, title: 'Hvězdy a vzory', description: 'Hvězdy k · 360 / n, přerušované čáry, šachovnice a stíny.' },
   { id: 5, title: 'Fraktály', description: 'Jen v Pythonu: funkce, která volá sama sebe.' },
 ];
@@ -396,6 +402,51 @@ export const LEVELS: Level[] = [
     hints: [
       'Při 60° by vznikl šestiúhelník, o stupeň víc a spirála se pootočí.',
       'cyklus for od 4 do 140 krok 4 [dopředu = i → vlevo 61]',
+    ],
+  },
+  {
+    id: '3-4',
+    world: 3,
+    index: 4,
+    title: 'Spirála s proměnnou délka',
+    task: 'Nastav proměnnou delka na 3. Pak 36krát: čára dlouhá delka, otočka vlevo o 60° a delka se zvětší o 3.',
+    reference: [setVar('delka', 3), repeat(36, [fwdD, left(60), changeVar('delka', 3)])],
+    palette: ['forward', 'left', 'right', 'repeat', 'setVar', 'changeVar'],
+    stars: { requires: ['setVar', 'changeVar'], usesVars: ['delka'], maxBlocks: 5 },
+    hints: [
+      'U bloku dopředu zapni „= delka“. Blok změň delka o 3 dej na konec těla opakuj.',
+      'nastav delka na 3 → opakuj 36× [dopředu = delka → vlevo 60 → změň delka o 3]',
+    ],
+  },
+  {
+    id: '3-5',
+    world: 3,
+    index: 5,
+    title: 'Vějíř',
+    task: 'Nastav uhel na 10. Pak 7krát: čára 100 tam a zpátky, otočka vlevo o uhel a uhel se zvětší o 5. Mezery mezi čarami rostou.',
+    reference: [setVar('uhel', 10), repeat(7, [fwd(100), back(100), leftU, changeVar('uhel', 5)])],
+    palette: ['forward', 'backward', 'left', 'right', 'repeat', 'setVar', 'changeVar'],
+    stars: { requires: ['setVar', 'changeVar'], usesVars: ['uhel'], maxBlocks: 6 },
+    hints: [
+      'Otočka vlevo s „= uhel“ se pokaždé otočí o víc: 10, 15, 20 …',
+      'nastav uhel na 10 → opakuj 7× [dopředu 100 → dozadu 100 → vlevo = uhel → změň uhel o 5]',
+    ],
+  },
+  {
+    id: '3-6',
+    world: 3,
+    index: 6,
+    title: 'Tři mnohoúhelníky',
+    task: 'Trojúhelník, čtverec a pětiúhelník se stranou 100 na stejné základně. Kresli je pořád stejným opakuj (opakuj pocet× dopředu delka, vlevo uhel) a před každým měň jen pocet a uhel.',
+    reference: [
+      setVar('delka', 100),
+      ...[3, 4, 5].flatMap((n) => [setVar('pocet', n), setVar('uhel', 360 / n), repeatP([fwdD, leftU])]),
+    ],
+    palette: ['forward', 'left', 'right', 'repeat', 'setVar', 'changeVar'],
+    stars: { requires: ['setVar'], usesVars: ['delka', 'uhel', 'pocet'], maxBlocks: 16 },
+    hints: [
+      'uhel = 360 / pocet: 120, 90 a 72. U opakuj zapni „= pocet“, u vlevo „= uhel“, u dopředu „= delka“.',
+      'nastav delka na 100 → nastav pocet na 3 → nastav uhel na 120 → opakuj = pocet [dopředu = delka → vlevo = uhel] → totéž pro 4/90 a 5/72',
     ],
   },
 

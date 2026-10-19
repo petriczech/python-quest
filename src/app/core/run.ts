@@ -7,6 +7,7 @@ import {
   Trace,
   TraceStep,
   TurtleState,
+  VarName,
 } from './program';
 
 export const MAX_STEPS = 5000;
@@ -48,6 +49,8 @@ export function run(program: readonly Command[], start: Partial<TurtleState> = {
   let iterations = 0;
   /** Hodnoty proměnných otevřených cyklů `for`, poslední je nejbližší */
   const loopValues: number[] = [];
+  /** Pojmenované proměnné; nenastavená má hodnotu 0 (generátor Pythonu ji tak i inicializuje) */
+  const vars: Record<VarName, number> = { delka: 0, uhel: 0, pocet: 0 };
 
   const record = (path: number[]): void => {
     steps.push({ ...state, path, segmentCount: segments.length, fillCount: fills.length });
@@ -76,7 +79,12 @@ export function run(program: readonly Command[], start: Partial<TurtleState> = {
       switch (command.kind) {
         case 'forward':
         case 'backward': {
-          const length = command.byVar ? (loopValues.at(-1) ?? command.value) : command.value;
+          const loopValue = command.byVar ? loopValues.at(-1) : undefined;
+          const length = loopValue !== undefined
+            ? loopValue
+            : command.useVar
+              ? vars.delka
+              : command.value;
           const distance = command.kind === 'forward' ? length : -length;
           const radians = (state.heading * Math.PI) / 180;
           moveTo(state.x + distance * Math.cos(radians), state.y + distance * Math.sin(radians));
@@ -86,7 +94,8 @@ export function run(program: readonly Command[], start: Partial<TurtleState> = {
         case 'left':
         case 'right': {
           const sign = command.kind === 'left' ? 1 : -1;
-          state.heading = normalizeHeading(state.heading + sign * command.angle);
+          const angle = command.useVar ? vars.uhel : command.angle;
+          state.heading = normalizeHeading(state.heading + sign * angle);
           record(path);
           break;
         }
@@ -114,14 +123,25 @@ export function run(program: readonly Command[], start: Partial<TurtleState> = {
           record(path);
           break;
         }
-        case 'repeat':
-          for (let i = 0; i < command.times && !truncated; i++) {
+        case 'repeat': {
+          // Jako Python range(pocet): počet se vyhodnotí jednou na začátku
+          const times = command.useVar ? vars.pocet : command.times;
+          for (let i = 0; i < times && !truncated; i++) {
             if (++iterations > MAX_ITERATIONS) {
               truncated = true;
               break;
             }
             exec(command.body, path);
           }
+          break;
+        }
+        case 'setVar':
+          vars[command.name] = command.value;
+          record(path);
+          break;
+        case 'changeVar':
+          vars[command.name] = vars[command.name] + command.by;
+          record(path);
           break;
         case 'for':
           for (

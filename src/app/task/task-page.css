@@ -45,6 +45,19 @@
   flex: 1 1 360px;
 }
 
+/* Zvětšený editor kódu: program bere většinu šířky, plátno zůstane vedle */
+.code-wide .task {
+  flex: 0 1 260px;
+}
+
+.code-wide .canvas-column {
+  flex: 1 1 420px;
+}
+
+.code-wide .program-column {
+  flex: 3 1 560px;
+}
+
 h1 {
   margin: 6px 0 8px;
   font-size: 26px;

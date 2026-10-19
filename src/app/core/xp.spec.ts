@@ -1,5 +1,6 @@
 import { findLevel } from '../levels/levels';
 import { Level } from './level';
+import { Command } from './program';
 import {
   Stars,
   codeLines,
@@ -83,6 +84,37 @@ describe('XP', () => {
     const record = { stars: [true, true, false] as Stars, bestMatch: 98, perfect: false, hintsUsed: 1, firstTry: true };
     expect(levelXp(record)).toBe(30);
     expect(levelXp({ ...record, code: true })).toBe(70);
+  });
+});
+
+describe('povinné proměnné', () => {
+  const level = findLevel('3-6');
+
+  it('bez opravdu použité proměnné není hvězda za strukturu', () => {
+    if (!level) {
+      throw new Error('Chybí úloha 3-6');
+    }
+    const plain = [3, 4, 5].map(
+      (n): Command => ({
+        kind: 'repeat',
+        times: n,
+        body: [
+          { kind: 'forward', value: 100 },
+          { kind: 'left', angle: 360 / n },
+        ],
+      }),
+    );
+    expect(evaluateStars(level, [{ kind: 'setVar', name: 'delka', value: 100 }, ...plain], 100)[1]).toBe(false);
+    expect(evaluateStars(level, level.reference, 100)[1]).toBe(true);
+  });
+
+  it('v kódu se proměnná musí objevit jako argument volání', () => {
+    if (!level) {
+      throw new Error('Chybí úloha 3-6');
+    }
+    const used = 'delka = 100\npocet = 3\nuhel = 120\nfor i in range(pocet):\n    forward(delka)\n    left(uhel)\n';
+    expect(evaluateCodeStars(level, used, 100)[1]).toBe(true);
+    expect(evaluateCodeStars(level, 'delka = 100\nfor i in range(3):\n    forward(100)\n    left(120)\n', 100)[1]).toBe(false);
   });
 });
 

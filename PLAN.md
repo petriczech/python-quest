@@ -33,7 +33,7 @@ Oba odkazy jsou soukromé a otevře je jen přihlášený vlastník.
 
 ## Cíl a rozsah MVP
 
-MVP obsahuje hratelné světy 1–5 (40 úloh): 1–4 v klikacím režimu i v psaném Pythonu, 5 jen v Pythonu: živý Python náhled, hvězdy, XP a uložený postup. Cílovka jsou studenti gymnázia, matika nejvýš sin/cos.
+MVP obsahuje hratelné světy 1–5 (43 úloh): 1–4 v klikacím režimu i v psaném Pythonu, 5 jen v Pythonu: živý Python náhled, hvězdy, XP a uložený postup. Cílovka jsou studenti gymnázia, matika nejvýš sin/cos.
 
 **V MVP:**
 
@@ -231,6 +231,9 @@ Postup je zevnitř ven: nejdřív čisté jádro (interpret, trace, skóre) s te
 | 3 | 1 | Čtvercová spirála 10 … 190 | blok `cyklus for`, délka `= i` |
 | 3 | 2 | Trojúhelníková spirála 10 … 240 | `range(od, do, krok)`, horní mez se neprovede |
 | 3 | 3 | Vír: čáry 4 … 136, otočka 61° | úhel o stupeň vedle mnohoúhelníku |
+| 3 | 4 | Spirála s proměnnou délka (3, +3, 60°) | bloky `nastav` a `změň`, `forward(delka)` |
+| 3 | 5 | Vějíř: úhel 10, +5 | proměnná `uhel` v otočce |
+| 3 | 6 | Tři mnohoúhelníky jedním opakuj | `pocet` a `uhel`, mění se jen nastavení |
 | 4 | 1 | Osmicípá hvězda k = 3 | otočka k · 360 / n |
 | 4 | 2 | Devíticípá hvězda k = 4 | totéž s jinými čísly |
 | 4 | 3 | Falešné kolo 36 × (120, vlevo 70) | kolik otáček, než se obrazec uzavře |

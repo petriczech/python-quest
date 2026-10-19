@@ -4,6 +4,7 @@ import { Command } from './program';
 import { rasterize } from './raster';
 import { run } from './run';
 import { feedback, match } from './score';
+import { evaluateStars } from './xp';
 
 const triangle = (sides: number): Command[] => {
   const program: Command[] = [];
@@ -67,6 +68,13 @@ describe('úlohy', () => {
       const reference = rasterize(run(level.reference, start));
       expect(match(reference, reference).percent).toBe(100);
       expect(match(reference, rasterize(run([], start))).percent).toBeLessThan(5);
+    },
+  );
+
+  it.each(LEVELS.filter((level) => !level.codeStarter).map((level) => [level.id, level] as const))(
+    '%s: vzorové řešení v blocích dá tři hvězdy',
+    (_id, level) => {
+      expect(evaluateStars(level, level.reference, 100)).toEqual([true, true, true]);
     },
   );
 

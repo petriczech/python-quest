@@ -37,6 +37,10 @@ import { keymap } from '@codemirror/view';
       max-height: 60vh;
       font-size: 15px;
     }
+    .code-wide app-code-editor .cm-editor {
+      min-height: 60vh;
+      max-height: 80vh;
+    }
     app-code-editor .cm-editor .cm-scroller {
       font-family: var(--font-code);
     }

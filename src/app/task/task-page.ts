@@ -15,7 +15,7 @@ import { RouterLink } from '@angular/router';
 import { CodeEditor } from '../code/code-editor';
 import { PythonRunner } from '../code/python-runner';
 import { levelStart } from '../core/level';
-import { Command, countBlocks, usedKinds } from '../core/program';
+import { Command, countBlocks, usedKinds, usedVars } from '../core/program';
 import { pythonText, toPython } from '../core/python';
 import { PythonRunResult, opsToProgram } from '../core/turtle-ops';
 import { rasterize } from '../core/raster';
@@ -106,6 +106,8 @@ export class TaskPage {
     computation: () => null,
   });
   protected readonly codeRunning = signal(false);
+  /** Zvětšený editor kódu: širší sloupec a vyšší editor */
+  protected readonly wideCode = signal(false);
 
   /** Kód kreslí od počátku: start úlohy si nastaví sám (vygenerovaný kód ho obsahuje) */
   protected readonly output = computed(() =>
@@ -151,6 +153,9 @@ export class TaskPage {
     }
     const stars = this.record()?.stars ?? [false, false, false];
     const requires = level.stars.requires ?? [];
+    const usesVars = level.stars.usesVars ?? [];
+    // „… a proměnné delka, uhel“: proměnné, které se musí opravdu použít
+    const varsText = usesVars.length ? ` a ${usesVars.length === 1 ? 'proměnnou' : 'proměnné'} ${usesVars.join(', ')}` : '';
     if (this.editMode() === 'code') {
       return [
         { done: stars[0], text: `Shoda se vzorem aspoň ${PASS_PERCENT} %`, now: true },
@@ -159,7 +164,7 @@ export class TaskPage {
           text: level.stars.recursion
             ? 'Použij rekurzi: funkce volá sama sebe'
             : requires.length
-              ? `Použij v kódu ${requires.map((k) => BLOCK_LABELS[k]).join(' a ')}`
+              ? `Použij v kódu ${requires.map((k) => BLOCK_LABELS[k]).join(' a ')}${varsText}`
               : 'Struktura (tady stačí splnit)',
           now: evaluateCodeStars(level, this.code(), 100)[1],
         },
@@ -173,15 +178,16 @@ export class TaskPage {
       ];
     }
     const kinds = usedKinds(this.program());
+    const vars = usedVars(this.program());
     const blocks = countBlocks(this.program());
     return [
       { done: stars[0], text: `Shoda se vzorem aspoň ${PASS_PERCENT} %`, now: true },
       {
         done: stars[1],
         text: requires.length
-          ? `Použij blok ${requires.map((k) => BLOCK_LABELS[k]).join(' a ')}`
+          ? `Použij blok ${requires.map((k) => BLOCK_LABELS[k]).join(' a ')}${varsText}`
           : 'Struktura (tady stačí splnit)',
-        now: requires.every((k) => kinds.has(k)),
+        now: requires.every((k) => kinds.has(k)) && usesVars.every((name) => vars.has(name)),
       },
       {
         done: stars[2],

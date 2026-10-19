@@ -39,6 +39,16 @@
   color: var(--repeat-text);
 }
 
+.g-var {
+  background: var(--var-bg);
+  border-color: var(--var-border);
+  color: var(--var-text);
+}
+
+.word {
+  font-weight: 600;
+}
+
 .g-pen {
   background: var(--pen-bg);
   border-color: var(--pen-border);

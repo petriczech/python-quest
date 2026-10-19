@@ -179,4 +179,37 @@ describe('run', () => {
         .steps,
     ).toHaveLength(0);
   });
+
+  it('proměnné: nastav, změň a použití v pohybu, otočce i opakuj', () => {
+    const trace = run([
+      { kind: 'setVar', name: 'delka', value: 10 },
+      { kind: 'setVar', name: 'uhel', value: 90 },
+      { kind: 'setVar', name: 'pocet', value: 3 },
+      {
+        kind: 'repeat',
+        times: 99,
+        useVar: true,
+        body: [
+          { kind: 'forward', value: 1, useVar: true },
+          { kind: 'left', angle: 1, useVar: true },
+          { kind: 'changeVar', name: 'delka', by: 10 },
+          // Změna počtu uvnitř cyklu už počet opakování nezmění (jako range)
+          { kind: 'changeVar', name: 'pocet', by: 5 },
+        ],
+      },
+    ]);
+    const lengths = trace.segments.map((s) => Math.round(Math.hypot(s.to.x - s.from.x, s.to.y - s.from.y)));
+    expect(lengths).toEqual([10, 20, 30]);
+    expect(trace.steps.at(-1)?.heading).toBe(270);
+  });
+
+  it('nenastavená proměnná má hodnotu 0', () => {
+    const trace = run([
+      { kind: 'repeat', times: 5, useVar: true, body: [{ kind: 'forward', value: 1 }] },
+      { kind: 'changeVar', name: 'delka', by: 7 },
+      { kind: 'forward', value: 1, useVar: true },
+    ]);
+    expect(trace.segments).toHaveLength(1);
+    expect(trace.steps.at(-1)?.x).toBe(7);
+  });
 });
