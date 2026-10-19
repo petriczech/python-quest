@@ -304,6 +304,20 @@ export const LEVELS: Level[] = [
     stars: { requires: ['repeat', 'fill'], maxBlocks: 6 },
     hints: ['Jeden vybarvený trojúhelník, pak otočka. A to 4×.', 'opakuj 4× [výplň [opakuj 3× [dopředu 80 → vlevo 120]] → vlevo 90]'],
   },
+  {
+    id: '2-13',
+    world: 2,
+    index: 13,
+    title: 'Kolo s ostny',
+    task: 'Nakresli kolo s 12 ostny. Osten je rovnostranný trojúhelník se stranou 40, který ční ven ze strany dvanáctiúhelníku.',
+    reference: [repeat(12, [right(60), fwd(40), left(120), fwd(40), right(60), left(30)])],
+    palette: ['forward', 'left', 'right', 'repeat'],
+    stars: { requires: ['repeat'], maxBlocks: 7 },
+    hints: [
+      'Osten: vpravo 60, dopředu 40, vlevo 120, dopředu 40 a vpravo 60 zpátky do původního směru. Mezi ostny se otoč o 360 / 12.',
+      'opakuj 12× [vpravo 60 → dopředu 40 → vlevo 120 → dopředu 40 → vpravo 60 → vlevo 30]',
+    ],
+  },
 ];
 
 export function findLevel(id: string): Level | undefined {
