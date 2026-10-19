@@ -152,7 +152,7 @@ Postup je zevnitř ven: nejdřív čisté jádro (interpret, trace, skóre) s te
 - [ ] `git init` a repo na GitHubu (preview kanály Firebase Hosting jedou přes GitHub Actions). Lokální git je, repo na GitHubu zatím ne.
 - [x] Angular workspace: standalone, zoneless, strict TS, ESLint, routy `/mapa`, `/uloha/:id`
 - [x] design tokeny (viz tabulka výše), fonty, mřížka papíru
-- [ ] Vitest a Playwright v CI (lokálně běží oba, CI chybí), deploy na Firebase Hosting z `main`
+- [ ] Vitest a Playwright v CI, deploy na Firebase Hosting z `main`. Workflow `.github/workflows/ci.yml` je hotový (lint, unit, build, E2E bez screenshotů, protože baseline jsou z Windows). Deploy čeká na skutečný Firebase projekt.
 
 ### Fáze 1 – jádro: interpret a trace
 
@@ -181,7 +181,7 @@ Postup je zevnitř ven: nejdřív čisté jádro (interpret, trace, skóre) s te
 
 ### Fáze 5 – postup a gamifikace
 
-- [ ] Google přihlášení, postup ve Firestore (záznam na úlohu, XP se odvozuje), offline cache. Zatím jen `localStorage`.
+- [ ] Google přihlášení, postup ve Firestore (záznam na úlohu, XP se odvozuje), offline cache. Hotovo a ověřené proti emulátorům (přihlášení, sloučení, zápis změn, rules s 22 testy). Chybí skutečný Firebase projekt: do té doby produkční build běží jen s `localStorage`.
 - [x] XP, úrovně, série dní, mapa s odemykáním světů, základní odznaky
 
 ### Fáze 6 – PWA a pilot
