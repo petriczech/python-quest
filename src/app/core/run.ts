@@ -10,6 +10,8 @@ import {
 } from './program';
 
 export const MAX_STEPS = 5000;
+/** Limit průchodů smyčkou, i když tělo nic neprovádí */
+export const MAX_ITERATIONS = 100_000;
 
 const PRECISION = 1e6;
 
@@ -43,6 +45,7 @@ export function run(program: readonly Command[], start: Partial<TurtleState> = {
   const fills: Fill[] = [];
   const openFills: Point[][] = [];
   let truncated = false;
+  let iterations = 0;
 
   const record = (path: number[]): void => {
     steps.push({ ...state, path, segmentCount: segments.length, fillCount: fills.length });
@@ -110,6 +113,10 @@ export function run(program: readonly Command[], start: Partial<TurtleState> = {
         }
         case 'repeat':
           for (let i = 0; i < command.times && !truncated; i++) {
+            if (++iterations > MAX_ITERATIONS) {
+              truncated = true;
+              break;
+            }
             exec(command.body, path);
           }
           break;

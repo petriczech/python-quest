@@ -116,6 +116,16 @@ describe('run', () => {
     expect(trace.segments[0]?.to).toEqual({ x: -50, y: -10 });
   });
 
+  it('vnořená prázdná opakuj nezamrznou', () => {
+    let program: Command[] = [];
+    for (let i = 0; i < 5; i++) {
+      program = [{ kind: 'repeat', times: 100, body: program }];
+    }
+    const trace = run(program);
+    expect(trace.truncated).toBe(true);
+    expect(trace.steps).toHaveLength(0);
+  });
+
   it('omezí počet kroků', () => {
     const trace = run([
       {
