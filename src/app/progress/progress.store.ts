@@ -1,4 +1,4 @@
-import { Service, computed, signal } from '@angular/core';
+import { Service, computed, isDevMode, signal } from '@angular/core';
 import { BADGES, Badge, earnedBadges } from '../core/badges';
 import { Level } from '../core/level';
 import { ProgressSnapshot } from '../core/sync';
@@ -42,6 +42,18 @@ function today(): string {
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 }
 
+/** Příznak v `localStorage`, který v dev buildu na localhostu odemkne všechny úlohy */
+export const DEBUG_FLAG = 'python-quest.debug';
+
+function readDebugFlag(): boolean {
+  const local = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  try {
+    return isDevMode() && local && localStorage.getItem(DEBUG_FLAG) === '1';
+  } catch {
+    return false;
+  }
+}
+
 function load(): SavedProgress {
   const empty: SavedProgress = { records: {}, streak: { days: 0, lastDay: null, best: 0 }, drafts: {} };
   try {
@@ -55,6 +67,8 @@ function load(): SavedProgress {
 @Service()
 export class ProgressStore {
   private readonly state = signal<SavedProgress>(load());
+  /** Debug mód: vše odemčené */
+  private readonly debug = readDebugFlag();
 
   readonly records = computed(() => this.state().records);
   readonly xp = computed(() => totalXp(this.records()));
@@ -88,6 +102,9 @@ export class ProgressStore {
   }
 
   isWorldUnlocked(world: number): boolean {
+    if (this.debug) {
+      return true;
+    }
     const index = WORLDS.findIndex((w) => w.id === world);
     if (index <= 0) {
       return index === 0;
@@ -98,6 +115,9 @@ export class ProgressStore {
 
   /** Úloha je otevřená, když je svět odemčený a předchozí úloha ve světě splněná. */
   isLevelUnlocked(level: Level): boolean {
+    if (this.debug) {
+      return true;
+    }
     if (!this.isWorldUnlocked(level.world)) {
       return false;
     }
