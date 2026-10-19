@@ -10,6 +10,7 @@ Angular aplikace na učení Python turtle kreslení pro studenty gymnázia. Plá
 - Jádro (`src/app/core/`) jsou čisté funkce bez Angularu: interpret, trace, rasterizace, skóre, generátor Pythonu. Testují se ve Vitestu.
 - Souřadnice jako Python turtle: (0, 0) uprostřed, y nahoru, úhel 0 = východ, `left` je kladný směr. Při vykreslení se osa y převrací.
 - Commity anglicky ve stylu `feat:` / `fix:` / `docs:` / `chore:` / `test:`.
+- Claude je v repu contributor: commit končí prázdným řádkem a `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` (má přednost před globálním zákazem tohoto řádku).
 
 ## Ověření
 
