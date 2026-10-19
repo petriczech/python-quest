@@ -17,7 +17,22 @@ Angular aplikace na učení Python turtle kreslení pro studenty gymnázia. Plá
 npx ng lint
 npx ng build
 npx ng test --watch=false
+npx playwright test
 ```
+
+Rules testy a E2E synchronizace potřebují emulátory (JDK ≥ 21, např. `JAVA_HOME=$HOME/.jdks/temurin-25.0.4.1`):
+
+```bash
+npm run test:rules
+npm run e2e:sync
+```
+
+## Firebase a porty
+
+- Emulátory pod `demo-python-quest` (`.firebaserc`), skutečný projekt zatím není: `FIREBASE_CONFIG` v `src/app/firebase/firebase.config.ts` má placeholdery, produkční build běží jen s `localStorage`.
+- Emulátory v dev buildu zapne `localStorage['python-quest.emulators'] = '1'` (jen localhost).
+- Porty: dev server 4300, E2E server 4318, auth 9101, firestore 8091, hub 4408, logging 4508, UI vypnuté.
+- Data: `users/{uid}/levels/{levelId}` (záznam úlohy) a `users/{uid}/meta/streak`; rozpracované programy zůstávají jen v zařízení.
 
 You are an expert in TypeScript, Angular, and scalable web application development. You write functional, maintainable, performant, and accessible code following Angular and TypeScript best practices.
 
