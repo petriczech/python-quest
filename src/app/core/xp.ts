@@ -56,23 +56,42 @@ export function evaluateCodeStars(level: Level, code: string, percent: number): 
   return [solved, solved && structure, solved && economy];
 }
 
-/** Počet řádků s kódem (bez prázdných a komentářů) */
+/** Import: nepočítá se do úspornosti */
+const IMPORT_LINE = /^\s*(import\s|from\s+\S+\s+import\s)/;
+/** Řádek s jediným voláním, které nekreslí (rychlost, tvar, okno), může být i `turtle.speed(0)` */
+const NO_DRAW_CALL =
+  /^\s*(?:[\p{L}_][\p{L}\p{N}_]*\.)?(speed|hideturtle|ht|showturtle|st|shape|shapesize|turtlesize|title|setup|screensize|bgcolor|colormode|tracer|update|delay|pensize|width|exitonclick|done|mainloop)\s*\(.*\)\s*$/u;
+/** Nastavení startu na nejvyšší úrovni (kostra úlohy ho vygeneruje) */
+const START_CALL =
+  /^(?:[\p{L}_][\p{L}\p{N}_]*\.)?(penup|pu|up|pendown|pd|down|goto|setpos|setposition|teleport|setheading|seth)\s*\(.*\)\s*$/u;
+
+/** Počet řádků s kódem: bez prázdných, komentářů, importů, nastavení startu a příkazů, které nekreslí */
 export function codeLines(code: string): number {
   return withoutCommentsAndStrings(code)
     .split('\n')
-    .filter((line) => line.trim()).length;
+    .filter(
+      (line) =>
+        line.trim() && !IMPORT_LINE.test(line) && !NO_DRAW_CALL.test(line) && !START_CALL.test(line.trimEnd()),
+    ).length;
 }
 
-/** Některá funkce volá ve svém těle sama sebe */
+/** Jméno v Pythonu včetně písmen s diakritikou */
+const NAME = '[\\p{L}_][\\p{L}\\p{N}_]*';
+
+/** Některá funkce volá ve svém těle sama sebe (i jednořádková `def f(n): … f(n - 1)`) */
 export function hasRecursion(code: string): boolean {
   const lines = code.split('\n');
   return lines.some((line, index) => {
-    const def = /^(\s*)def\s+(\w+)\s*\(/.exec(line);
+    const def = new RegExp(`^(\\s*)def\\s+(${NAME})\\s*\\(`, 'u').exec(line);
     if (!def) {
       return false;
     }
     const indent = def[1]?.length ?? 0;
-    const call = new RegExp(`\\b${def[2]}\\s*\\(`);
+    // Volání jména, před kterým nestojí další písmeno (`\b` v JS diakritiku nezná)
+    const call = new RegExp(`(?<![\\p{L}\\p{N}_.])${def[2]}\\s*\\(`, 'u');
+    if (call.test(line.slice(def[0].length))) {
+      return true;
+    }
     for (const next of lines.slice(index + 1)) {
       if (!next.trim()) {
         continue;

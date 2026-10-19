@@ -167,7 +167,7 @@ export class TaskPage {
           ? { done: stars[2], text: 'Úspornost se hodnotí jen v blocích', now: false }
           : {
               done: stars[2],
-              text: `Nejvýš ${level.stars.maxLines} řádků kódu`,
+              text: `Nejvýš ${level.stars.maxLines} řádků kódu (start, import a speed se nepočítají)`,
               now: codeLines(this.code()) <= level.stars.maxLines,
             },
       ];

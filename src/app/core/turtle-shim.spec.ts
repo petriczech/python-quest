@@ -138,7 +138,25 @@ describe('turtle shim v Pyodide', () => {
     ],
   };
 
-  it.each(Object.entries(SOLUTIONS))('%s: rekurzivní řešení dá 100 % a tři hvězdy', async (id, solution) => {
+  SOLUTIONS['5-3 s diakritikou a speed'] = [
+    'speed(0)',
+    'hideturtle()',
+    'def větev(d):',
+    '    if d < 12:',
+    '        return',
+    '    forward(d)',
+    '    left(30)',
+    '    větev(d - 12)',
+    '    right(60)',
+    '    větev(d - 12)',
+    '    left(30)',
+    '    backward(d)',
+    'left(90)',
+    'větev(72)',
+  ];
+
+  it.each(Object.entries(SOLUTIONS))('%s: rekurzivní řešení dá 100 % a tři hvězdy', async (name, solution) => {
+    const id = name.split(' ')[0];
     const level = LEVELS.find((l) => l.id === id);
     if (!level) {
       throw new Error(`Chybí úloha ${id}`);

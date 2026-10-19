@@ -103,9 +103,33 @@ describe('rekurze a řádky kódu', () => {
     expect(hasRecursion('def a(n):\n    b(n)\ndef b(n):\n    a(n)\n')).toBe(false);
   });
 
+  it('pozná rekurzi i u jména s diakritikou a v jednořádkové def', () => {
+    expect(hasRecursion('def větev(d):\n    if d < 12:\n        return\n    větev(d - 12)\n')).toBe(true);
+    expect(hasRecursion('def f(n): f(n - 1) if n else forward(1)\n')).toBe(true);
+    // ff( není volání f(
+    expect(hasRecursion('def f(n):\n    ff(n)\n')).toBe(false);
+  });
+
   it('počítá jen řádky s kódem', () => {
     expect(codeLines(koch)).toBe(6);
     expect(codeLines('# jen komentář\n\nforward(1)\n')).toBe(1);
+  });
+
+  it('nepočítá import, nastavení startu ani příkazy, které nekreslí', () => {
+    const code = [
+      'import turtle',
+      'from turtle import *',
+      'penup()',
+      'goto(-81, 47)',
+      'pendown()',
+      'turtle.speed(0)',
+      'hideturtle()',
+      'forward(1)',
+      'def f():',
+      '    goto(1, 2)',
+    ].join('\n');
+    // forward, def a goto uvnitř funkce
+    expect(codeLines(code)).toBe(3);
   });
 
   it('úloha s rekurzí a limitem řádků', () => {

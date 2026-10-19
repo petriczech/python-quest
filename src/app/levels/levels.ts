@@ -552,7 +552,7 @@ export const LEVELS: Level[] = [
       '',
       'koch(270, 3)',
     ].join('\n'),
-    stars: { recursion: true, maxLines: 16 },
+    stars: { recursion: true, maxLines: 12 },
     hints: [
       'Funkce volá sama sebe s menším d i n. Až n klesne na 0, kreslí se rovná čára.',
       'koch(d / 3, n - 1) → left(60) → koch(d / 3, n - 1) → right(120) → koch(d / 3, n - 1) → left(60) → koch(d / 3, n - 1)',
@@ -575,7 +575,7 @@ export const LEVELS: Level[] = [
       '    koch(162, 3)',
       '    right(120)',
     ].join('\n'),
-    stars: { recursion: true, maxLines: 18 },
+    stars: { recursion: true, maxLines: 14 },
     hints: [
       'Funkci koch z minulé úlohy stačí zkopírovat. Otočka vpravo dá hroty křivek ven z trojúhelníku.',
       'def koch(d, n): … stejně jako v úloze 1, pak for i in range(3): koch(162, 3) → right(120)',
@@ -598,7 +598,7 @@ export const LEVELS: Level[] = [
       'left(90)',
       'strom(72)',
     ].join('\n'),
-    stars: { recursion: true, maxLines: 16 },
+    stars: { recursion: true, maxLines: 12 },
     hints: [
       'Po nakreslení obou menších větví musí želva stát a dívat se stejně jako na začátku, proto na konci vlevo 30 a dozadu o d.',
       'forward(d) → left(30) → strom(d - 12) → right(60) → strom(d - 12) → left(30) → backward(d)',
@@ -621,7 +621,7 @@ export const LEVELS: Level[] = [
       '',
       'sierpinski(240, 3)',
     ].join('\n'),
-    stars: { recursion: true, maxLines: 22 },
+    stars: { recursion: true, maxLines: 18 },
     hints: [
       'Mezi menšími trojúhelníky se přesuň o d / 2: doprava, zpátky, pak šikmo nahoru pod úhlem 60° a nakonec zpátky dolů.',
       'sierpinski(d/2) → forward(d/2) → sierpinski(d/2) → backward(d/2) → left(60) → forward(d/2) → right(60) → sierpinski(d/2) → left(60) → backward(d/2) → right(60)',
