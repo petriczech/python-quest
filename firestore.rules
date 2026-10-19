@@ -1,0 +1,52 @@
+rules_version = '2';
+
+// Přihlášený uživatel čte svůj podstrom a zapisuje jen dokumenty, které posílá synchronizace postupu,
+// přesně v jejich tvaru: users/{uid}/levels/{levelId} a users/{uid}/meta/streak. Nic se nemaže.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    function isCount(value, max) {
+      return value is int && value >= 0 && value <= max;
+    }
+
+    function isStars(value) {
+      return value is list && value.size() == 3
+        && value[0] is bool && value[1] is bool && value[2] is bool;
+    }
+
+    match /users/{uid}/{document=**} {
+      allow read: if isOwner(uid);
+    }
+
+    match /users/{uid}/levels/{levelId} {
+      allow create, update: if isOwner(uid)
+        && levelId.matches('^[0-9]{1,2}-[0-9]{1,2}$')
+        && request.resource.data.keys().hasOnly(['stars', 'bestMatch', 'perfect', 'hintsUsed', 'firstTry'])
+        && request.resource.data.keys().hasAll(['stars', 'bestMatch', 'perfect', 'hintsUsed', 'firstTry'])
+        && isStars(request.resource.data.stars)
+        && request.resource.data.bestMatch is number
+        && request.resource.data.bestMatch >= 0
+        && request.resource.data.bestMatch <= 100
+        && request.resource.data.perfect is bool
+        && isCount(request.resource.data.hintsUsed, 10)
+        && request.resource.data.firstTry is bool;
+      allow delete: if false;
+    }
+
+    match /users/{uid}/meta/{docId} {
+      allow create, update: if isOwner(uid)
+        && docId == 'streak'
+        && request.resource.data.keys().hasOnly(['days', 'lastDay', 'best'])
+        && request.resource.data.keys().hasAll(['days', 'lastDay', 'best'])
+        && isCount(request.resource.data.days, 100000)
+        && isCount(request.resource.data.best, 100000)
+        && request.resource.data.lastDay is string
+        && (request.resource.data.lastDay == ''
+          || request.resource.data.lastDay.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'));
+      allow delete: if false;
+    }
+  }
+}
