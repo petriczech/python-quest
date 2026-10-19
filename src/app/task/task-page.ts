@@ -265,6 +265,10 @@ export class TaskPage {
     }
     const result = match(rasterize(this.reference()), rasterize(this.output()));
     this.result.set({ match: result, text: feedback(this.reference(), this.output(), result) });
+    // Prázdná kresba se jako pokus nepočítá
+    if (this.output().segments.length === 0 && this.output().fills.length === 0) {
+      return;
+    }
     const solvedBefore = this.record()?.stars[0] ?? false;
     const attempt = this.progress.submit(
       level,
